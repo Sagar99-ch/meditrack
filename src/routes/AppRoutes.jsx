@@ -1,18 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import DashboardLayout from "../layouts/DashboardLayout";
-
+import EditMedicine from "../pages/Medicines/EditMedicine";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Medicines from "../pages/Medicines/Medicines";
 import Purchase from "../pages/Purchase/Purchase";
 import Suppliers from "../pages/Suppliers/Suppliers";
 import Reports from "../pages/Reports/Reports";
 import Settings from "../pages/Settings/Settings";
+import AddMedicine from "../pages/Medicines/AddMedicine";
+import ViewMedicine from "../pages/Medicines/ViewMedicine";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/medicines/edit/:id" element={<EditMedicine />} />
+        <Route path="/medicines/view/:id" element={<ViewMedicine />} />
+        <Route path="/medicines/add" element={<AddMedicine />} />
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="medicines" element={<Medicines />} />
