@@ -27,3 +27,28 @@ export default defineSchema({
     .index("by_name", ["medicineName"])
     .index("by_batch", ["batchNumber"]),
 });
+defineTable({
+  supplierName: v.string(),
+  companyName: v.string(),
+  contactPerson: v.string(),
+
+  phone: v.string(),
+  alternatePhone: v.optional(v.string()),
+
+  email: v.optional(v.string()),
+  gstNumber: v.optional(v.string()),
+
+  address: v.string(),
+  city: v.string(),
+  state: v.string(),
+  pinCode: v.string(),
+
+  paymentTerms: v.optional(v.string()),
+  creditLimit: v.optional(v.number()),
+
+  notes: v.optional(v.string()),
+
+  status: v.string(),
+
+  createdAt: v.number(),
+});
