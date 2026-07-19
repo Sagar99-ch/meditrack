@@ -13,10 +13,17 @@ import ViewMedicine from "../pages/Medicines/ViewMedicine";
 import AddSupplier from "../pages/Suppliers/AddSupplier";
 import ViewSupplier from "../pages/Suppliers/ViewSupplier";
 import EditSupplier from "../pages/Suppliers/EditSupplier";
+
+import AddPurchase from "../pages/Purchase/AddPurchase";
+import EditPurchase from "../pages/Purchase/EditPurchase";
+import ViewPurchase from "../pages/Purchase/ViewPurchase";
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/purchase/add" element={<AddPurchase />} />
+        <Route path="/purchase/edit/:id" element={<EditPurchase />} />
+        <Route path="/purchase/view/:id" element={<ViewPurchase />} />
         <Route path="/suppliers/edit/:id" element={<EditSupplier />} />
         <Route path="/suppliers/view/:id" element={<ViewSupplier />} />
         <Route path="/suppliers/add" element={<AddSupplier />} />

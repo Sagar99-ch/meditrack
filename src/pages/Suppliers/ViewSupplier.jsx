@@ -2,13 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ArrowLeft, Building2, Phone, Mail, MapPin } from "lucide-react";
-
 import AppButton from "../../components/common/AppButton";
 
 const ViewSupplier = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const supplier = useQuery(api.suppliers.getSupplierById, { id });
 
   if (!supplier) {

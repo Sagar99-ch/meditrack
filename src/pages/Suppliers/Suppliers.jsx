@@ -8,22 +8,64 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-
 import { useNavigate } from "react-router-dom";
-
 import AppButton from "../../components/common/AppButton";
+
 const Suppliers = () => {
   const navigate = useNavigate();
   const suppliers = useQuery(api.suppliers.getSuppliers);
   const deleteSupplier = useMutation(api.suppliers.deleteSupplier);
 
-  console.log(suppliers);
+  const handleExport = () => {
+    if (!suppliers || suppliers.length === 0) {
+      toast.error("No suppliers found to export.");
+      return;
+    }
+
+    const exportData = suppliers.map((supplier, index) => ({
+      "S.No": index + 1,
+      "Supplier Name": supplier.supplierName,
+      "Company Name": supplier.companyName,
+      "Contact Person": supplier.contactPerson,
+      Phone: supplier.phone,
+      Email: supplier.email || "-",
+      Address: supplier.address,
+      City: supplier.city,
+      State: supplier.state,
+      "PIN Code": supplier.pinCode,
+      "GST Number": supplier.gstNumber || "-",
+      "Payment Terms": supplier.paymentTerms || "-",
+      "Credit Limit": supplier.creditLimit || 0,
+      Status: supplier.status,
+      Notes: supplier.notes || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Suppliers");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const data = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(data, `Suppliers_${new Date().toLocaleDateString("en-GB")}.xlsx`);
+  };
+
+  // console.log(suppliers);
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -87,7 +129,10 @@ const Suppliers = () => {
         {/* Right */}
 
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 hover:bg-slate-100">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 hover:bg-slate-100"
+          >
             <Download size={18} />
             Export
           </button>

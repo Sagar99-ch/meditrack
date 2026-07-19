@@ -30,6 +30,11 @@ export const addSupplier = mutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert("suppliers", {
       ...args,
+
+      totalPurchase: 0,
+      totalPaid: 0,
+      totalDue: 0,
+
       createdAt: Date.now(),
     });
   },

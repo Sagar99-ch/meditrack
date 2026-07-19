@@ -2,51 +2,67 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-
 import { api } from "../../../convex/_generated/api";
-
 import AppInput from "../common/AppInput";
 import AppSelect from "../common/AppSelect";
 import AppTextarea from "../common/AppTextarea";
 import AppButton from "../common/AppButton";
+import { useEffect } from "react";
 
-const SupplierForm = () => {
+const SupplierForm = ({ initialData = null, onSubmit, loading = false }) => {
   const navigate = useNavigate();
-
-  const addSupplier = useMutation(api.suppliers.addSupplier);
+  const addSupplierMutation = useMutation(api.suppliers.addSupplier);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = async (data) => {
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        supplierName: initialData.supplierName,
+        companyName: initialData.companyName,
+        contactPerson: initialData.contactPerson,
+        phone: initialData.phone,
+        alternatePhone: initialData.alternatePhone,
+        email: initialData.email,
+        address: initialData.address,
+        city: initialData.city,
+        state: initialData.state,
+        pinCode: initialData.pinCode,
+        gstNumber: initialData.gstNumber,
+        paymentTerms: initialData.paymentTerms,
+        creditLimit: initialData.creditLimit,
+        notes: initialData.notes,
+        status: initialData.status,
+      });
+    }
+  }, [initialData, reset]);
+
+  const handleFormSubmit = async (data) => {
+    if (onSubmit) {
+      return onSubmit(data);
+    }
+
     try {
-      await addSupplier({
+      await addSupplierMutation({
         supplierName: data.supplierName,
         companyName: data.companyName,
-
         contactPerson: data.contactPerson,
-
         phone: data.phone,
         alternatePhone: data.alternatePhone || "",
-
         email: data.email || "",
-
         address: data.address,
         city: data.city,
         state: data.state,
         pinCode: data.pinCode,
-
         gstNumber: data.gstNumber || "",
-
         paymentTerms: data.paymentTerms || "",
-
         creditLimit: Number(data.creditLimit) || 0,
-
         notes: data.notes || "",
-
         status: data.status,
       });
 
@@ -61,7 +77,7 @@ const SupplierForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
       {/* Basic Information */}
 
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -218,7 +234,13 @@ const SupplierForm = () => {
       <div className="flex justify-end gap-4">
         <AppButton variant="secondary">Cancel</AppButton>
 
-        <AppButton type="submit">Save Supplier</AppButton>
+        <AppButton type="submit" disabled={loading}>
+          {loading
+            ? "Saving..."
+            : initialData
+              ? "Update Supplier"
+              : "Save Supplier"}
+        </AppButton>
       </div>
     </form>
   );
