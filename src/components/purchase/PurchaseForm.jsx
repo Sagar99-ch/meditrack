@@ -1,5 +1,5 @@
 import AppButton from "../common/AppButton";
-import PurchaseItemsTable from "./PurchaseItemsTable";
+import PurchaseItemsSection from "./PurchaseItemsSection";
 import PurchaseInformation from "./PurchaseInformation";
 import PurchaseSummary from "./PurchaseSummary";
 import { api } from "../../../convex/_generated/api";
@@ -27,15 +27,21 @@ const PurchaseForm = () => {
       notes: "",
       items: [
         {
-          medicineId: "",
           medicineName: "",
-          batchNumber: "",
-          expiryDate: "",
+          genericName: "",
+          company: "",
+          category: "",
+          unit: "",
 
-          quantity: 1,
+          batchNumber: "",
+          manufacturingDate: "",
+          expiryDate: "",
+          rackLocation: "",
+
           purchasePrice: 0,
+          sellingPrice: 0,
           gst: 0,
-          amount: 0,
+          quantity: 1,
         },
       ],
     },
@@ -104,15 +110,21 @@ const PurchaseForm = () => {
 
         items: [
           {
-            medicineId: "",
             medicineName: "",
-            batchNumber: "",
-            expiryDate: "",
+            genericName: "",
+            company: "",
+            category: "",
+            unit: "",
 
-            quantity: 1,
+            batchNumber: "",
+            manufacturingDate: "",
+            expiryDate: "",
+            rackLocation: "",
+
             purchasePrice: 0,
+            sellingPrice: 0,
             gst: 0,
-            amount: 0,
+            quantity: 1,
           },
         ],
       });
@@ -132,7 +144,7 @@ const PurchaseForm = () => {
           supplierOptions={supplierOptions}
         />
 
-        <PurchaseItemsTable fields={fields} append={append} remove={remove} />
+        <PurchaseItemsSection fields={fields} append={append} remove={remove} />
         <PurchaseSummary />
         <div className="flex justify-end">
           <AppButton type="submit">Save Purchase</AppButton>

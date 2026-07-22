@@ -4,29 +4,28 @@ import { v } from "convex/values";
 export default defineSchema({
   medicines: defineTable({
     medicineName: v.string(),
-    company: v.string(),
+    genericName: v.optional(v.string()),
+    company: v.optional(v.string()),
     category: v.string(),
     unit: v.string(),
 
     batchNumber: v.string(),
+    manufacturingDate: v.optional(v.string()),
     expiryDate: v.string(),
 
     purchasePrice: v.number(),
     sellingPrice: v.number(),
-
-    stock: v.number(),
-    minimumStock: v.number(),
-
     gst: v.number(),
 
+    currentStock: v.number(),
+
     rackLocation: v.optional(v.string()),
-    notes: v.optional(v.string()),
+
+    status: v.string(),
 
     createdAt: v.number(),
-  })
-    .index("by_name", ["medicineName"])
-    .index("by_batch", ["batchNumber"]),
-
+    updatedAt: v.number(),
+  }).index("by_name", ["medicineName"]),
   suppliers: defineTable({
     supplierName: v.string(),
     companyName: v.string(),
@@ -67,15 +66,23 @@ export default defineSchema({
 
     items: v.array(
       v.object({
-        medicineId: v.id("medicines"),
         medicineName: v.string(),
+        genericName: v.optional(v.string()),
+        company: v.optional(v.string()),
+        category: v.string(),
+        unit: v.string(),
 
         batchNumber: v.string(),
+        manufacturingDate: v.optional(v.string()),
         expiryDate: v.string(),
 
-        quantity: v.number(),
         purchasePrice: v.number(),
+        sellingPrice: v.number(),
         gst: v.number(),
+
+        quantity: v.number(),
+
+        rackLocation: v.optional(v.string()),
 
         amount: v.number(),
       })

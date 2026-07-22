@@ -6,7 +6,8 @@ import {
   medicineUnits,
 } from "../../../data/medicineOptions";
 
-const MedicineDetailsSection = ({ register, errors }) => {
+const MedicineDetailsSection = ({ register, errors, prefix = "" }) => {
+  const field = (name) => (prefix ? `${prefix}.${name}` : name);
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 className="mb-6 text-lg font-semibold">Medicine Details</h2>
@@ -16,8 +17,8 @@ const MedicineDetailsSection = ({ register, errors }) => {
           label="Medicine Name"
           required
           placeholder="Enter medicine name"
-          {...register("medicineName")}
-          error={errors.medicineName}
+          {...register(field("medicineName"))}
+          error={errors?.medicineName}
         />
 
         <AppInput

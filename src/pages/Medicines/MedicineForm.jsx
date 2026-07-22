@@ -9,7 +9,12 @@ import AdditionalSection from "./sections/AdditionalSection";
 
 import AppButton from "../../components/common/AppButton";
 
-const MedicineForm = ({ mode = "add", defaultValues = {}, onSubmit }) => {
+const MedicineForm = ({
+  mode = "add",
+  defaultValues = {},
+  onSubmit,
+  showActions = true,
+}) => {
   const methods = useForm({
     resolver: zodResolver(medicineSchema),
     defaultValues,
@@ -35,13 +40,15 @@ const MedicineForm = ({ mode = "add", defaultValues = {}, onSubmit }) => {
 
         <AdditionalSection />
 
-        <div className="flex justify-end gap-4">
-          <AppButton variant="secondary">Cancel</AppButton>
+        {showActions && (
+          <div className="flex justify-end gap-4">
+            <AppButton variant="secondary">Cancel</AppButton>
 
-          <AppButton type="submit">
-            {mode === "add" ? "Save Medicine" : "Update Medicine"}
-          </AppButton>
-        </div>
+            <AppButton type="submit">
+              {mode === "add" ? "Save Medicine" : "Update Medicine"}
+            </AppButton>
+          </div>
+        )}
       </form>
     </FormProvider>
   );

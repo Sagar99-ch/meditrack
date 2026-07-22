@@ -38,16 +38,22 @@ export const addPurchase = mutation({
 
     items: v.array(
       v.object({
-        medicineId: v.id("medicines"),
         medicineName: v.string(),
+        genericName: v.optional(v.string()),
+        company: v.optional(v.string()),
+        category: v.string(),
+        unit: v.string(),
 
         batchNumber: v.string(),
+        manufacturingDate: v.optional(v.string()),
         expiryDate: v.string(),
 
-        quantity: v.number(),
         purchasePrice: v.number(),
+        sellingPrice: v.number(),
         gst: v.number(),
-        amount: v.number(),
+
+        quantity: v.number(),
+        rackLocation: v.optional(v.string()),
       })
     ),
 
@@ -63,30 +69,107 @@ export const addPurchase = mutation({
   },
 
   handler: async (ctx, args) => {
-    // Save Purchase
-    const purchaseId = await ctx.db.insert("purchases", {
-      ...args,
-      createdAt: Date.now(),
-    });
+    const purchaseItems = [];
 
-    // Update Medicine Stock
+    // Process every purchase item
     for (const item of args.items) {
-      const medicine = await ctx.db.get(item.medicineId);
+      const amount = item.quantity * item.purchasePrice * (1 + item.gst / 100);
 
-      if (!medicine) continue;
+      // Find medicine by name
+      const existingMedicine = await ctx.db
+        .query("medicines")
+        .withIndex("by_name", (q) => q.eq("medicineName", item.medicineName))
+        .unique();
 
-      await ctx.db.patch(item.medicineId, {
-        stock: medicine.stock + item.quantity,
+      if (existingMedicine) {
+        // Update existing medicine
+        await ctx.db.patch(existingMedicine._id, {
+          genericName: item.genericName || "",
+          company: item.company || "",
+          category: item.category,
+          unit: item.unit,
+
+          batchNumber: item.batchNumber,
+          manufacturingDate: item.manufacturingDate || "",
+          expiryDate: item.expiryDate,
+
+          purchasePrice: item.purchasePrice,
+          sellingPrice: item.sellingPrice,
+          gst: item.gst,
+
+          currentStock: existingMedicine.currentStock + item.quantity,
+
+          rackLocation: item.rackLocation || "",
+
+          updatedAt: Date.now(),
+        });
+      } else {
+        // Create new medicine
+        await ctx.db.insert("medicines", {
+          medicineName: item.medicineName,
+          genericName: item.genericName || "",
+          company: item.company || "",
+          category: item.category,
+          unit: item.unit,
+
+          batchNumber: item.batchNumber,
+          manufacturingDate: item.manufacturingDate || "",
+          expiryDate: item.expiryDate,
+
+          purchasePrice: item.purchasePrice,
+          sellingPrice: item.sellingPrice,
+          gst: item.gst,
+
+          currentStock: item.quantity,
+
+          rackLocation: "",
+
+          status: "Active",
+
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+
+      purchaseItems.push({
+        ...item,
+        amount,
       });
     }
 
-    // Update Supplier Totals
+    // Save Purchase
+    const purchaseId = await ctx.db.insert("purchases", {
+      supplierId: args.supplierId,
+      supplierName: args.supplierName,
+
+      invoiceNumber: args.invoiceNumber,
+      purchaseDate: args.purchaseDate,
+      paymentMethod: args.paymentMethod,
+
+      items: purchaseItems,
+
+      subtotal: args.subtotal,
+      gstTotal: args.gstTotal,
+      discount: args.discount,
+      grandTotal: args.grandTotal,
+
+      paidAmount: args.paidAmount,
+      dueAmount: args.dueAmount,
+
+      notes: args.notes,
+
+      createdAt: Date.now(),
+    });
+
+    // Update supplier totals
     const supplier = await ctx.db.get(args.supplierId);
 
     if (supplier) {
       await ctx.db.patch(args.supplierId, {
         totalPurchase: (supplier.totalPurchase || 0) + args.grandTotal,
+
         totalPaid: (supplier.totalPaid || 0) + args.paidAmount,
+
         totalDue: (supplier.totalDue || 0) + args.dueAmount,
       });
     }
@@ -111,16 +194,21 @@ export const updatePurchase = mutation({
 
     items: v.array(
       v.object({
-        medicineId: v.id("medicines"),
         medicineName: v.string(),
+        genericName: v.optional(v.string()),
+        company: v.optional(v.string()),
+        category: v.string(),
+        unit: v.string(),
 
         batchNumber: v.string(),
+        manufacturingDate: v.optional(v.string()),
         expiryDate: v.string(),
 
-        quantity: v.number(),
         purchasePrice: v.number(),
+        sellingPrice: v.number(),
         gst: v.number(),
-        amount: v.number(),
+
+        quantity: v.number(),
       })
     ),
 
@@ -149,6 +237,7 @@ export const updatePurchase = mutation({
 // =========================
 // Delete Purchase
 // =========================
+
 export const deletePurchase = mutation({
   args: {
     id: v.id("purchases"),
