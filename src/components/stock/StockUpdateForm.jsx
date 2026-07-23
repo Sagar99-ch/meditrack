@@ -3,9 +3,9 @@ import AppInput from "../common/AppInput";
 import AppSelect from "../common/AppSelect";
 import AppTextarea from "../common/AppTextarea";
 import AppButton from "../common/AppButton";
-
-import { useQuery } from "convex/react";
+import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 
 const StockUpdateForm = () => {
   const { register, handleSubmit, watch } = useForm({
@@ -18,15 +18,29 @@ const StockUpdateForm = () => {
   const medicines = useQuery(api.medicines.getMedicines);
   const selectedMedicineId = watch("medicineId");
   const adjustmentType = watch("adjustmentType");
+  const updateStock = useMutation(api.stockAdjustments.updateStock);
 
   const selectedMedicine = medicines?.find(
     (medicine) => medicine._id === selectedMedicineId
   );
+  const onSubmit = async (data) => {
+    try {
+      await updateStock({
+        medicineId: data.medicineId,
+        adjustmentType: data.adjustmentType,
+        quantity: data.quantity,
+        reason: data.reason,
+        notes: data.notes,
+      });
 
-  const onSubmit = (data) => {
-    console.log(data);
+      toast.success("Stock Updated Successfully");
+
+      // console.log("Stock Updated");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Medicine Information */}
@@ -84,7 +98,9 @@ const StockUpdateForm = () => {
             label="Quantity"
             placeholder="Enter quantity"
             required
-            {...register("quantity")}
+            {...register("quantity", {
+              valueAsNumber: true,
+            })}
           />
         </div>
 
