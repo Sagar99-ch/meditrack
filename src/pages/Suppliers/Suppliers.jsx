@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
+import SupplierTable from "../../components/suppliers/SupplierTable";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { useQuery } from "convex/react";
@@ -145,105 +145,7 @@ const Suppliers = () => {
       </div>
 
       {/* Supplier Table */}
-
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr className="text-left text-sm text-slate-700">
-              <th className="px-6 py-4">Supplier</th>
-
-              <th className="px-6 py-4">Contact Person</th>
-
-              <th className="px-6 py-4">Phone</th>
-
-              <th className="px-6 py-4">City</th>
-
-              <th className="px-6 py-4">Status</th>
-
-              <th className="px-6 py-4">Purchase</th>
-
-              <th className="px-6 py-4">Due</th>
-
-              <th className="px-6 py-4 text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suppliers?.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="py-16">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-blue-50">
-                      <Users size={42} className="text-blue-500" />
-                    </div>
-
-                    <h2 className="mt-6 text-2xl font-bold text-slate-700">
-                      No Suppliers Found
-                    </h2>
-
-                    <p className="mt-2 max-w-md text-center text-slate-500">
-                      Start by adding your first supplier.
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              suppliers?.map((supplier) => (
-                <tr key={supplier._id} className="border-t hover:bg-slate-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-semibold">{supplier.supplierName}</p>
-                      <p className="text-sm text-slate-500">
-                        {supplier.companyName}
-                      </p>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4">{supplier.contactPerson}</td>
-
-                  <td className="px-6 py-4">{supplier.phone}</td>
-
-                  <td className="px-6 py-4">{supplier.city}</td>
-
-                  <td className="px-6 py-4">{supplier.status}</td>
-
-                  <td className="px-6 py-4">₹0</td>
-
-                  <td className="px-6 py-4 text-red-500">₹0</td>
-
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() =>
-                          navigate(`/suppliers/view/${supplier._id}`)
-                        }
-                        className="rounded-lg bg-blue-50 p-2 text-blue-600 hover:bg-blue-100 transition"
-                      >
-                        <Eye size={18} />
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          navigate(`/suppliers/edit/${supplier._id}`)
-                        }
-                        className="rounded-lg bg-green-50 p-2 text-green-600 hover:bg-green-100 transition"
-                      >
-                        <Pencil size={18} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(supplier._id)}
-                        className="rounded-lg bg-red-50 p-2 text-red-600 hover:bg-red-100 transition"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <SupplierTable suppliers={suppliers || []} handleDelete={handleDelete} />
     </div>
   );
 };

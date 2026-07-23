@@ -17,6 +17,8 @@ import EditSupplier from "../pages/Suppliers/EditSupplier";
 import AddPurchase from "../pages/Purchase/AddPurchase";
 import EditPurchase from "../pages/Purchase/EditPurchase";
 import ViewPurchase from "../pages/Purchase/ViewPurchase";
+import StockUpdate from "../pages/stock/StockUpdate";
+
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -32,6 +34,7 @@ const AppRoutes = () => {
         <Route path="/medicines/add" element={<AddMedicine />} />
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="stock-update" element={<StockUpdate />} />
           <Route path="medicines" element={<Medicines />} />
           <Route path="purchase" element={<Purchase />} />
           <Route path="suppliers" element={<Suppliers />} />

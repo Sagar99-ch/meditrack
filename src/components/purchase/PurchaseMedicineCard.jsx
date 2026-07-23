@@ -4,6 +4,7 @@ import { useFormContext } from "react-hook-form";
 import AppInput from "../common/AppInput";
 import AppSelect from "../common/AppSelect";
 import AppButton from "../common/AppButton";
+import { toast } from "sonner";
 
 const unitOptions = [
   { value: "Tablet", label: "Tablet" },
@@ -18,7 +19,7 @@ const unitOptions = [
   { value: "Box", label: "Box" },
 ];
 
-const PurchaseMedicineCard = ({ index, remove }) => {
+const PurchaseMedicineCard = ({ index, remove, totalItems }) => {
   const {
     register,
     formState: { errors },
@@ -32,7 +33,18 @@ const PurchaseMedicineCard = ({ index, remove }) => {
           Medicine #{index + 1}
         </h3>
 
-        <AppButton type="button" variant="danger" onClick={() => remove(index)}>
+        <AppButton
+          type="button"
+          variant="danger"
+          onClick={() => {
+            if (totalItems === 1) {
+              toast.error("At least one medicine is required.");
+              return;
+            }
+
+            remove(index);
+          }}
+        >
           <Trash2 size={18} />
         </AppButton>
       </div>

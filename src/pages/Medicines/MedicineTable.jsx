@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 
-const getStatus = (stock, minimumStock) => {
+const getStatus = (stock, minimumStock = 10) => {
   if (stock === 0) {
     return {
       text: "Out of Stock",
@@ -65,7 +65,7 @@ const MedicineTable = ({ medicines }) => {
 
           <tbody>
             {medicines.map((medicine) => {
-              const status = getStatus(medicine.stock, medicine.minimumStock);
+              const status = getStatus(medicine.currentStock);
 
               return (
                 <tr
@@ -92,7 +92,7 @@ const MedicineTable = ({ medicines }) => {
                   </td>
                   <td className="px-5 py-4">
                     <span className="rounded-lg bg-slate-100 px-3 py-1 font-medium">
-                      {medicine.stock}
+                      {medicine.currentStock}
                     </span>
                   </td>
 

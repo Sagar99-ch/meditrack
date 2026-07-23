@@ -10,6 +10,7 @@
 
 import type * as medicines from "../medicines.js";
 import type * as purchases from "../purchases.js";
+import type * as stockAdjustments from "../stockAdjustments.js";
 import type * as suppliers from "../suppliers.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   medicines: typeof medicines;
   purchases: typeof purchases;
+  stockAdjustments: typeof stockAdjustments;
   suppliers: typeof suppliers;
 }>;
 

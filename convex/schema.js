@@ -103,4 +103,21 @@ export default defineSchema({
     .index("by_invoice", ["invoiceNumber"])
     .index("by_supplier", ["supplierId"])
     .index("by_date", ["purchaseDate"]),
+
+  stockAdjustments: defineTable({
+    medicineId: v.id("medicines"),
+    medicineName: v.string(),
+
+    previousStock: v.number(),
+    adjustmentType: v.string(), // Increase | Decrease
+    quantity: v.number(),
+    newStock: v.number(),
+
+    reason: v.string(),
+    notes: v.optional(v.string()),
+
+    createdAt: v.number(),
+  })
+    .index("by_medicine", ["medicineId"])
+    .index("by_date", ["createdAt"]),
 });

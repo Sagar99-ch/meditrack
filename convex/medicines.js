@@ -5,24 +5,31 @@ import { v } from "convex/values";
 export const addMedicine = mutation({
   args: {
     medicineName: v.string(),
-    company: v.string(),
+    genericName: v.optional(v.string()),
+    company: v.optional(v.string()),
     category: v.string(),
     unit: v.string(),
+
     batchNumber: v.string(),
+    manufacturingDate: v.optional(v.string()),
     expiryDate: v.string(),
+
     purchasePrice: v.number(),
     sellingPrice: v.number(),
-    stock: v.number(),
-    minimumStock: v.number(),
     gst: v.number(),
+
+    currentStock: v.number(),
+
     rackLocation: v.optional(v.string()),
-    notes: v.optional(v.string()),
+
+    status: v.string(),
   },
 
   handler: async (ctx, args) => {
     return await ctx.db.insert("medicines", {
       ...args,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
   },
 });
@@ -59,7 +66,7 @@ export const updateMedicine = mutation({
     purchasePrice: v.number(),
     sellingPrice: v.number(),
 
-    stock: v.number(),
+    currentStock: v.number(),
     minimumStock: v.number(),
 
     gst: v.number(),
@@ -70,8 +77,10 @@ export const updateMedicine = mutation({
 
   handler: async (ctx, args) => {
     const { id, ...data } = args;
-
-    await ctx.db.patch(id, data);
+    await ctx.db.patch(id, {
+      ...data,
+      updatedAt: Date.now(),
+    });
 
     return { success: true };
   },

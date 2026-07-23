@@ -19,9 +19,6 @@ export const addSupplier = mutation({
     state: v.string(),
     pinCode: v.string(),
 
-    paymentTerms: v.optional(v.string()),
-    creditLimit: v.optional(v.number()),
-
     notes: v.optional(v.string()),
 
     status: v.string(),
@@ -76,9 +73,6 @@ export const updateSupplier = mutation({
     city: v.string(),
     state: v.string(),
     pinCode: v.string(),
-
-    paymentTerms: v.optional(v.string()),
-    creditLimit: v.optional(v.number()),
 
     notes: v.optional(v.string()),
 

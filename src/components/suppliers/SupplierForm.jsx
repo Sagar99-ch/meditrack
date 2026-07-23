@@ -60,10 +60,9 @@ const SupplierForm = ({ initialData = null, onSubmit, loading = false }) => {
         state: data.state,
         pinCode: data.pinCode,
         gstNumber: data.gstNumber || "",
-        paymentTerms: data.paymentTerms || "",
-        creditLimit: Number(data.creditLimit) || 0,
+
         notes: data.notes || "",
-        status: data.status,
+        status: "Active",
       });
 
       toast.success("Supplier Added Successfully");
@@ -75,7 +74,6 @@ const SupplierForm = ({ initialData = null, onSubmit, loading = false }) => {
       toast.error("Failed to save supplier");
     }
   };
-
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
       {/* Basic Information */}
@@ -181,44 +179,20 @@ const SupplierForm = ({ initialData = null, onSubmit, loading = false }) => {
         </div>
       </div>
 
-      {/* Business */}
+      {initialData && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h2 className="mb-6 text-2xl font-bold">⚙️ Status</h2>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h2 className="mb-6 text-2xl font-bold">💳 Business Information</h2>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <AppInput
-            label="GST Number"
-            placeholder="23ABCDE1234F1Z5"
-            {...register("gstNumber")}
-          />
-
-          <AppInput
-            label="Payment Terms"
-            placeholder="30 Days"
-            {...register("paymentTerms")}
-          />
-
-          <AppInput
-            type="number"
-            label="Credit Limit"
-            placeholder="50000"
-            {...register("creditLimit")}
-          />
           <AppSelect
-            label="Status"
+            label="Supplier Status"
             options={[
               { label: "Active", value: "Active" },
               { label: "Inactive", value: "Inactive" },
             ]}
-            {...register("status", {
-              required: "Status is required",
-            })}
-            error={errors.status}
+            {...register("status")}
           />
         </div>
-      </div>
-
+      )}
       {/* Notes */}
 
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">

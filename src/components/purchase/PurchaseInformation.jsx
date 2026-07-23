@@ -1,14 +1,3 @@
-import AppInput from "../common/AppInput";
-import AppSelect from "../common/AppSelect";
-
-const paymentOptions = [
-  { value: "Cash", label: "Cash" },
-  { value: "UPI", label: "UPI" },
-  { value: "Card", label: "Card" },
-  { value: "Bank Transfer", label: "Bank Transfer" },
-  { value: "Credit", label: "Credit" },
-];
-
 const PurchaseInformation = ({ register, supplierOptions }) => {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">

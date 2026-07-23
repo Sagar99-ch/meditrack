@@ -61,7 +61,12 @@ const PurchaseItemsSection = ({ fields, append, remove }) => {
 
       <div className="space-y-6">
         {fields.map((field, index) => (
-          <PurchaseMedicineCard key={field.id} index={index} remove={remove} />
+          <PurchaseMedicineCard
+            key={field.id}
+            index={index}
+            remove={remove}
+            totalItems={fields.length}
+          />
         ))}
       </div>
 

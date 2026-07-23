@@ -1,16 +1,43 @@
-import { Plus, Search, Download, Filter, ShoppingCart } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Download,
+  Filter,
+  ShoppingCart,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import AppButton from "../../components/common/AppButton";
 
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
 
 const Purchase = () => {
   const navigate = useNavigate();
   const purchases = useQuery(api.purchases.getPurchases) || [];
+  const deletePurchase = useMutation(api.purchases.deletePurchase);
 
   console.log(purchases);
+
+  const handleDelete = async (id, invoiceNumber) => {
+    const confirmed = window.confirm(`Delete Purchase "${invoiceNumber}" ?`);
+
+    if (!confirmed) return;
+
+    try {
+      await deletePurchase({ id });
+
+      toast.success("Purchase deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete purchase.");
+    }
+  };
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -134,7 +161,39 @@ const Purchase = () => {
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 text-center">View</td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() =>
+                          navigate(`/purchase/view/${purchase._id}`)
+                        }
+                        className="rounded-lg border border-slate-200 p-2 transition hover:bg-slate-100"
+                        title="View"
+                      >
+                        <Eye size={18} className="text-slate-600" />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          navigate(`/purchase/edit/${purchase._id}`)
+                        }
+                        className="rounded-lg border border-slate-200 p-2 transition hover:bg-blue-50"
+                        title="Edit"
+                      >
+                        <Pencil size={18} className="text-blue-600" />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleDelete(purchase._id, purchase.invoiceNumber)
+                        }
+                        className="rounded-lg border border-slate-200 p-2 transition hover:bg-red-50"
+                        title="Delete"
+                      >
+                        <Trash2 size={18} className="text-red-600" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
