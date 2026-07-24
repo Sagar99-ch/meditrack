@@ -2,6 +2,28 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  transactions: defineTable({
+    transactionType: v.string(), // Income | Expense
+
+    category: v.string(),
+
+    paymentToFrom: v.string(),
+
+    amount: v.number(),
+
+    paymentMethod: v.string(),
+
+    transactionDate: v.string(),
+
+    referenceNo: v.optional(v.string()),
+
+    notes: v.optional(v.string()),
+
+    createdAt: v.number(),
+
+    updatedAt: v.number(),
+  }),
+
   medicines: defineTable({
     medicineName: v.string(),
     genericName: v.optional(v.string()),

@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
+
 const SidebarItem = ({ item }) => {
-  const Icon = item.icon;
   const { isCollapsed } = useSidebar();
+
+  const Icon = item.icon;
+
   return (
     <NavLink
       to={item.path}

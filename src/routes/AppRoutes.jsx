@@ -19,6 +19,10 @@ import EditPurchase from "../pages/Purchase/EditPurchase";
 import ViewPurchase from "../pages/Purchase/ViewPurchase";
 import StockUpdate from "../pages/stock/StockUpdate";
 
+import AccountsDashboard from "../pages/accounts/AccountsDashboard";
+import Transactions from "../pages/accounts/Transactions";
+import AddTransaction from "../pages/accounts/AddTransaction";
+
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -34,6 +38,14 @@ const AppRoutes = () => {
         <Route path="/medicines/add" element={<AddMedicine />} />
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="/accounts" element={<AccountsDashboard />} />
+
+          <Route path="/accounts/transactions" element={<Transactions />} />
+
+          <Route
+            path="/accounts/add-transaction"
+            element={<AddTransaction />}
+          />
           <Route path="stock-update" element={<StockUpdate />} />
           <Route path="medicines" element={<Medicines />} />
           <Route path="purchase" element={<Purchase />} />

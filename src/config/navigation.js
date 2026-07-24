@@ -6,6 +6,10 @@ import {
   Boxes,
   FileText,
   Settings,
+  Wallet,
+  ChevronRight,
+  Receipt,
+  PlusCircle,
 } from "lucide-react";
 
 export const navigation = [
@@ -14,32 +18,69 @@ export const navigation = [
     path: "/",
     icon: LayoutDashboard,
   },
+
   {
-    title: "Medicines",
-    path: "/medicines",
+    title: "Inventory",
     icon: Pill,
-  },
-  {
-    title: "Purchase",
-    path: "/purchase",
-    icon: ShoppingCart,
+    children: [
+      {
+        title: "Medicines",
+        path: "/medicines",
+        icon: Pill,
+      },
+      {
+        title: "Stock Update",
+        path: "/stock-update",
+        icon: Boxes,
+      },
+    ],
   },
 
   {
-    title: "Stock update",
-    path: "/stock-update",
-    icon: Boxes,
+    title: "Purchase",
+    icon: ShoppingCart,
+    children: [
+      {
+        title: "Purchase",
+        path: "/purchase",
+        icon: ShoppingCart,
+      },
+      {
+        title: "Suppliers",
+        path: "/suppliers",
+        icon: Truck,
+      },
+    ],
   },
+
   {
-    title: "Suppliers",
-    path: "/suppliers",
-    icon: Truck,
+    title: "Accounts",
+    icon: Wallet,
+    children: [
+      {
+        title: "Dashboard",
+        path: "/accounts",
+        icon: Wallet,
+      },
+      {
+        title: "Transactions",
+        path: "/accounts/transactions",
+        icon: Receipt,
+      },
+      {
+        title: "Add Transaction",
+        path: "/accounts/add-transaction",
+        icon: PlusCircle,
+      },
+    ],
   },
+
   {
     title: "Reports",
     path: "/reports",
     icon: FileText,
   },
+
   {
     title: "Settings",
     path: "/settings",

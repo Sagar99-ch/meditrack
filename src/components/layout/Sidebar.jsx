@@ -4,13 +4,15 @@ import { navigation } from "../../config/navigation";
 import SidebarItem from "./SidebarItem";
 import UserProfile from "./UserProfile";
 import { useSidebar } from "../../context/SidebarContext";
+import SidebarGroup from "./SidebarGroup";
 
 const Sidebar = () => {
   const { isCollapsed } = useSidebar();
+
   return (
     <aside
-      className={`h-screen border-r border-slate-200 bg-white flex flex-col transition-all duration-300
-    ${isCollapsed ? "w-20" : "w-64"}`}
+      className={`h-screen flex flex-col border-r border-slate-200 bg-white transition-all duration-300
+      ${isCollapsed ? "w-20" : "w-64"}`}
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
@@ -28,12 +30,17 @@ const Sidebar = () => {
       </div>
       {/* Navigation */}
 
-      <nav className="flex-1 space-y-2 p-4">
-        {navigation.map((item) => (
-          <SidebarItem key={item.path} item={item} />
-        ))}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <div className="space-y-2">
+          {navigation.map((item) =>
+            item.children ? (
+              <SidebarGroup key={item.title} item={item} />
+            ) : (
+              <SidebarItem key={item.path} item={item} />
+            )
+          )}
+        </div>
       </nav>
-
       {/* Footer */}
 
       <div className="border-t border-slate-200 p-4">
