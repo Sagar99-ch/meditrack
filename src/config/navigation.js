@@ -58,19 +58,14 @@ export const navigation = [
     icon: Wallet,
     children: [
       {
-        title: "Dashboard",
-        path: "/accounts",
-        icon: Wallet,
+        title: "Add Transaction",
+        path: "/accounts/add-transaction",
+        icon: PlusCircle,
       },
       {
         title: "Transactions",
         path: "/accounts/transactions",
         icon: Receipt,
-      },
-      {
-        title: "Add Transaction",
-        path: "/accounts/add-transaction",
-        icon: PlusCircle,
       },
     ],
   },

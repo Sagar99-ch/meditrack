@@ -7,7 +7,7 @@ export default defineSchema({
 
     category: v.string(),
 
-    paymentToFrom: v.string(),
+    partyName: v.string(),
 
     amount: v.number(),
 

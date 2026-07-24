@@ -1,11 +1,22 @@
 import { forwardRef } from "react";
 
 const AppSelect = forwardRef(
-  ({ label, options = [], error, required = false, ...props }, ref) => {
+  (
+    {
+      label,
+      options = [],
+      error,
+      required = false,
+      placeholder = "Select an option",
+      className = "",
+      ...props
+    },
+    ref
+  ) => {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="space-y-2">
         {label && (
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-semibold text-slate-700">
             {label}
             {required && <span className="ml-1 text-red-500">*</span>}
           </label>
@@ -14,13 +25,22 @@ const AppSelect = forwardRef(
         <select
           ref={ref}
           {...props}
-          className={`h-11 rounded-xl border bg-white px-4 text-sm outline-none transition ${
-            error
-              ? "border-red-500 focus:ring-red-100"
-              : "border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          }`}
+          className={`
+            w-full rounded-xl border bg-white px-4 py-3
+            outline-none transition-all
+
+            ${
+              error
+                ? "border-red-500 focus:border-red-500"
+                : "border-slate-300 focus:border-blue-500"
+            }
+
+            disabled:bg-slate-100
+
+            ${className}
+          `}
         >
-          <option value="">Select</option>
+          <option value="">{placeholder}</option>
 
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -29,7 +49,7 @@ const AppSelect = forwardRef(
           ))}
         </select>
 
-        {error && <p className="text-xs text-red-500">{error.message}</p>}
+        {error && <p className="text-sm text-red-500">{error.message}</p>}
       </div>
     );
   }
