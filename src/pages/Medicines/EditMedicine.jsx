@@ -45,7 +45,7 @@ const EditMedicine = () => {
         expiryDate: medicine.expiryDate,
         purchasePrice: medicine.purchasePrice,
         sellingPrice: medicine.sellingPrice,
-        stock: medicine.stock,
+        currentStock: medicine.currentStock,
         minimumStock: medicine.minimumStock,
         gst: medicine.gst,
         rackLocation: medicine.rackLocation,
@@ -74,7 +74,7 @@ const EditMedicine = () => {
         purchasePrice: Number(data.purchasePrice),
         sellingPrice: Number(data.sellingPrice),
 
-        stock: Number(data.stock),
+        currentStock: Number(data.currentStock),
         minimumStock: Number(data.minimumStock),
 
         gst: Number(data.gst),
@@ -172,7 +172,7 @@ const EditMedicine = () => {
           <AppInput
             type="number"
             label="Current Stock"
-            {...register("stock")}
+            {...register("currentStock")}
           />
 
           <AppInput

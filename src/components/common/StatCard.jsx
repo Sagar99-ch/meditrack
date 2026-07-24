@@ -6,9 +6,28 @@ const StatCard = ({
   icon: Icon,
   color = "bg-blue-500",
   subtitle,
+  onClick,
 }) => {
+  const isClickable = typeof onClick === "function";
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (isClickable && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300
+        ${
+          isClickable
+            ? "cursor-pointer hover:-translate-y-1 hover:shadow-lg active:scale-[0.98]"
+            : ""
+        }`}
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500">{title}</p>

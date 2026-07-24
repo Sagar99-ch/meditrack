@@ -38,7 +38,8 @@ const AddMedicine = () => {
         purchasePrice: Number(data.purchasePrice),
         sellingPrice: Number(data.sellingPrice),
 
-        stock: Number(data.stock),
+        currentStock: Number(data.currentStock),
+        status: "Active", 
         minimumStock: Number(data.minimumStock),
 
         gst: Number(data.gst),
@@ -149,7 +150,7 @@ const AddMedicine = () => {
             label="Current Stock"
             required
             placeholder="0"
-            {...register("stock")}
+            {...register("currentStock")}
           />
 
           <AppInput

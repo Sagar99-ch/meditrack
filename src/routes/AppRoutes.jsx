@@ -6,7 +6,7 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import Medicines from "../pages/Medicines/Medicines";
 import Purchase from "../pages/Purchase/Purchase";
 import Suppliers from "../pages/Suppliers/Suppliers";
-import Reports from "../pages/Reports/Reports";
+import Reports from "../pages/reports/Reports";
 import Settings from "../pages/Settings/Settings";
 import AddMedicine from "../pages/Medicines/AddMedicine";
 import ViewMedicine from "../pages/Medicines/ViewMedicine";
@@ -39,7 +39,6 @@ const AppRoutes = () => {
           <Route index element={<Dashboard />} />
 
           <Route path="/accounts/transactions" element={<Transactions />} />
-
           <Route
             path="/accounts/add-transaction"
             element={<AddTransaction />}

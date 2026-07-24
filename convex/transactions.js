@@ -67,3 +67,27 @@ export const updateTransaction = mutation({
     };
   },
 });
+
+export const getDashboardStats = query({
+  handler: async (ctx) => {
+    const transactions = await ctx.db.query("transactions").collect();
+
+    let income = 0;
+    let expense = 0;
+
+    transactions.forEach((t) => {
+      if (t.transactionType === "Income") {
+        income += t.amount;
+      } else {
+        expense += t.amount;
+      }
+    });
+
+    return {
+      totalIncome: income,
+      totalExpense: expense,
+      netBalance: income - expense,
+      totalTransactions: transactions.length,
+    };
+  },
+});

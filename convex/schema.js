@@ -40,6 +40,9 @@ export default defineSchema({
     gst: v.number(),
 
     currentStock: v.number(),
+    minimumStock: v.number(),
+
+    notes: v.optional(v.string()),
 
     rackLocation: v.optional(v.string()),
 

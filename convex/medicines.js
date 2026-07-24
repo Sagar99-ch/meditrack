@@ -19,6 +19,9 @@ export const addMedicine = mutation({
     gst: v.number(),
 
     currentStock: v.number(),
+    minimumStock: v.number(),
+
+    notes: v.optional(v.string()),
 
     rackLocation: v.optional(v.string()),
 
@@ -96,6 +99,40 @@ export const deleteMedicine = mutation({
 
     return {
       success: true,
+    };
+  },
+});
+
+export const getDashboardStats = query({
+  handler: async (ctx) => {
+    const medicines = await ctx.db.query("medicines").collect();
+
+    const totalMedicines = medicines.length;
+
+    const totalStock = medicines.reduce(
+      (sum, medicine) => sum + medicine.currentStock,
+      0
+    );
+
+    // Agar minimumStock field add karoge to ye aur accurate hoga
+    const lowStock = medicines.filter(
+      (medicine) => medicine.currentStock <= 10
+    ).length;
+
+    const today = new Date();
+    const next30Days = new Date();
+    next30Days.setDate(today.getDate() + 30);
+
+    const expiringSoon = medicines.filter((medicine) => {
+      const expiry = new Date(medicine.expiryDate);
+      return expiry >= today && expiry <= next30Days;
+    }).length;
+
+    return {
+      totalMedicines,
+      totalStock,
+      lowStock,
+      expiringSoon,
     };
   },
 });
