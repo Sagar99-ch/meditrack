@@ -5,6 +5,7 @@ import ReportHeader from "./components/ReportHeader";
 import ExpiringMedicinesTable from "./ExpiringMedicinesTable";
 import LowStockMedicinesTable from "./LowStockMedicinesTable";
 import { Search } from "lucide-react";
+import ExpiringSoonMedicinesTable from "./ExpiringSoonMedicinesTable";
 
 const Reports = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,9 +40,15 @@ const Reports = () => {
 
       {/* Tables */}
       <div className="rounded-xl bg-white shadow">
-        {reportType === "expiring" ? (
+        {reportType === "expiring" && (
           <ExpiringMedicinesTable search={search} />
-        ) : (
+        )}
+
+        {reportType === "expiringSoon" && (
+          <ExpiringSoonMedicinesTable search={search} />
+        )}
+
+        {reportType === "lowStock" && (
           <LowStockMedicinesTable search={search} />
         )}
       </div>

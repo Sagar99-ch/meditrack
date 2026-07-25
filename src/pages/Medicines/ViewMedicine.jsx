@@ -125,7 +125,7 @@ const ViewMedicine = () => {
                 <p className="text-sm text-slate-500">Current Stock</p>
 
                 <h3 className="mt-2 text-2xl font-bold text-slate-800">
-                  {medicine.stock}
+                  {medicine.currentStock}
                 </h3>
               </div>
 
@@ -167,7 +167,7 @@ const ViewMedicine = () => {
           icon={<Boxes className="h-5 w-5 text-green-600" />}
           title="Inventory"
         >
-          <InfoRow label="Current Stock" value={medicine.stock} />
+          <InfoRow label="Current Stock" value={medicine.currentStock} />
 
           <InfoRow label="Minimum Stock" value={medicine.minimumStock} />
 

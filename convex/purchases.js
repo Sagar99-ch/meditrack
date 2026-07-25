@@ -52,7 +52,6 @@ export const addPurchase = mutation({
         sellingPrice: v.number(),
         gst: v.number(),
 
-        quantity: v.number(),
         rackLocation: v.optional(v.string()),
       })
     ),
@@ -208,7 +207,10 @@ export const updatePurchase = mutation({
         sellingPrice: v.number(),
         gst: v.number(),
 
+        amount: v.optional(v.float64()),
+
         quantity: v.number(),
+        rackLocation: v.optional(v.string()),
       })
     ),
 
@@ -224,9 +226,152 @@ export const updatePurchase = mutation({
   },
 
   handler: async (ctx, args) => {
-    const { id, ...data } = args;
+    // Get old purchase
+    const oldPurchase = await ctx.db.get(args.id);
 
-    await ctx.db.patch(id, data);
+    if (!oldPurchase) {
+      throw new Error("Purchase not found");
+    }
+
+    // =========================
+    // Reverse old medicine stock
+    // =========================
+    for (const item of oldPurchase.items) {
+      const medicine = await ctx.db
+        .query("medicines")
+        .withIndex("by_name", (q) => q.eq("medicineName", item.medicineName))
+        .unique();
+
+      if (medicine) {
+        await ctx.db.patch(medicine._id, {
+          currentStock: Math.max(0, medicine.currentStock - item.quantity),
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    // =========================
+    // Reverse old supplier totals
+    // =========================
+    const oldSupplier = await ctx.db.get(oldPurchase.supplierId);
+
+    if (oldSupplier) {
+      await ctx.db.patch(oldSupplier._id, {
+        totalPurchase:
+          (oldSupplier.totalPurchase || 0) - oldPurchase.grandTotal,
+
+        totalPaid: (oldSupplier.totalPaid || 0) - oldPurchase.paidAmount,
+
+        totalDue: (oldSupplier.totalDue || 0) - oldPurchase.dueAmount,
+      });
+    }
+
+    // =========================
+    // Process new purchase items
+    // =========================
+    const purchaseItems = [];
+
+    for (const item of args.items) {
+      const amount = item.quantity * item.purchasePrice * (1 + item.gst / 100);
+
+      const medicine = await ctx.db
+        .query("medicines")
+        .withIndex("by_name", (q) => q.eq("medicineName", item.medicineName))
+        .unique();
+
+      if (medicine) {
+        await ctx.db.patch(medicine._id, {
+          genericName: item.genericName || "",
+          company: item.company || "",
+          category: item.category,
+          unit: item.unit,
+
+          batchNumber: item.batchNumber,
+          manufacturingDate: item.manufacturingDate || "",
+          expiryDate: item.expiryDate,
+
+          purchasePrice: item.purchasePrice,
+          sellingPrice: item.sellingPrice,
+          gst: item.gst,
+
+          currentStock: medicine.currentStock + item.quantity,
+
+          rackLocation: item.rackLocation || "",
+
+          updatedAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert("medicines", {
+          medicineName: item.medicineName,
+          genericName: item.genericName || "",
+          company: item.company || "",
+          category: item.category,
+          unit: item.unit,
+
+          batchNumber: item.batchNumber,
+          manufacturingDate: item.manufacturingDate || "",
+          expiryDate: item.expiryDate,
+
+          purchasePrice: item.purchasePrice,
+          sellingPrice: item.sellingPrice,
+          gst: item.gst,
+
+          currentStock: item.quantity,
+          minimumStock: item.minimumStock,
+
+          rackLocation: item.rackLocation || "",
+
+          status: "Active",
+
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+
+      purchaseItems.push({
+        ...item,
+        amount,
+      });
+    }
+
+    // =========================
+    // Update supplier totals
+    // =========================
+    const supplier = await ctx.db.get(args.supplierId);
+
+    if (supplier) {
+      await ctx.db.patch(supplier._id, {
+        totalPurchase: (supplier.totalPurchase || 0) + args.grandTotal,
+
+        totalPaid: (supplier.totalPaid || 0) + args.paidAmount,
+
+        totalDue: (supplier.totalDue || 0) + args.dueAmount,
+      });
+    }
+
+    // =========================
+    // Update purchase
+    // =========================
+    await ctx.db.patch(args.id, {
+      supplierId: args.supplierId,
+      supplierName: args.supplierName,
+
+      invoiceNumber: args.invoiceNumber,
+      purchaseDate: args.purchaseDate,
+      paymentMethod: args.paymentMethod,
+
+      items: purchaseItems,
+
+      subtotal: args.subtotal,
+      gstTotal: args.gstTotal,
+      discount: args.discount,
+      grandTotal: args.grandTotal,
+
+      paidAmount: args.paidAmount,
+      dueAmount: args.dueAmount,
+
+      notes: args.notes,
+    });
 
     return {
       success: true,

@@ -1,6 +1,12 @@
 import { AlertTriangle } from "lucide-react";
 
-const ExpiryAlertModal = ({ open, medicines, onClose, onViewReport }) => {
+const ExpiryAlertModal = ({
+  open,
+  medicines,
+  onClose,
+  onViewReport,
+  onRemindLater,
+}) => {
   if (!open) return null;
 
   return (
@@ -40,6 +46,13 @@ const ExpiryAlertModal = ({ open, medicines, onClose, onViewReport }) => {
             className="rounded-lg bg-red-600 px-4 py-2 text-white"
           >
             View Report
+          </button>
+
+          <button
+            onClick={onRemindLater}
+            className="rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+          >
+            Remind me in 1 hour
           </button>
         </div>
       </div>

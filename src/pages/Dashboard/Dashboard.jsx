@@ -16,13 +16,33 @@ const Dashboard = () => {
   const todayExpiring = useQuery(api.reports.getTodayExpiringMedicines);
 
   const [openAlert, setOpenAlert] = useState(false);
-
   useEffect(() => {
-    if (todayExpiring && todayExpiring.length > 0) {
-      setOpenAlert(true);
-    }
-  }, [todayExpiring]);
+    if (!todayExpiring || todayExpiring.length === 0) return;
 
+    const today = new Date().toLocaleDateString("en-CA");
+
+    const dismissedDate = localStorage.getItem("expiry-alert-dismissed");
+    const remindAt = Number(localStorage.getItem("expiry-remind-at") || 0);
+
+    // Agar reminder ka time complete ho gaya hai
+    if (remindAt && Date.now() >= remindAt) {
+      localStorage.removeItem("expiry-remind-at");
+      setOpenAlert(true);
+      return;
+    }
+
+    // Agar reminder pending hai to popup mat dikhao
+    if (remindAt && Date.now() < remindAt) {
+      return;
+    }
+
+    // Agar aaj dismiss kiya hua hai to popup mat dikhao
+    if (dismissedDate === today) {
+      return;
+    }
+
+    setOpenAlert(true);
+  }, [todayExpiring]);
   return (
     <div className="space-y-6">
       <PageHeader
@@ -65,14 +85,26 @@ const Dashboard = () => {
           onClick={() => navigate("/reports?type=expiring")}
         />
       </div>
-
       <ExpiryAlertModal
         open={openAlert}
         medicines={todayExpiring || []}
-        onClose={() => setOpenAlert(false)}
+        onClose={() => {
+          const today = new Date().toISOString().split("T")[0];
+          localStorage.setItem("expiry-alert-dismissed", today);
+          setOpenAlert(false);
+        }}
         onViewReport={() => {
+          const today = new Date().toISOString().split("T")[0];
+          localStorage.setItem("expiry-alert-dismissed", today);
           setOpenAlert(false);
           navigate("/reports?type=expiring");
+        }}
+        onRemindLater={() => {
+          const remindAt = Date.now() + 60 * 60 * 1000;
+
+          localStorage.setItem("expiry-remind-at", remindAt.toString());
+
+          setOpenAlert(false);
         }}
       />
     </div>

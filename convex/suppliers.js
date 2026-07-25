@@ -78,6 +78,9 @@ export const updateSupplier = mutation({
 
     status: v.string(),
     companyName: v.string(),
+
+    paymentTerms: v.optional(v.string()),
+    creditLimit: v.optional(v.number()),
   },
 
   handler: async (ctx, args) => {
