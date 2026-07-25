@@ -53,6 +53,8 @@ export const addPurchase = mutation({
         gst: v.number(),
 
         rackLocation: v.optional(v.string()),
+
+        quantity: v.number(),
       })
     ),
 
