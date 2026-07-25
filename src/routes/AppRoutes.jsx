@@ -25,7 +25,7 @@ import AddPurchase from "../pages/Purchase/AddPurchase";
 import EditPurchase from "../pages/Purchase/EditPurchase";
 import ViewPurchase from "../pages/Purchase/ViewPurchase";
 
-import Reports from "../pages/reports/Reports";
+import Reports from "../pages/Reports/Reports";
 import Settings from "../pages/Settings/Settings";
 
 import StockUpdate from "../pages/stock/StockUpdate";
