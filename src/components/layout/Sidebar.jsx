@@ -6,9 +6,12 @@ import UserProfile from "./UserProfile";
 import { useSidebar } from "../../context/SidebarContext";
 import SidebarGroup from "./SidebarGroup";
 
+import { LogOut } from "lucide-react";
+import useAuth from "../../hooks/useAuth";
+
 const Sidebar = () => {
   const { isCollapsed } = useSidebar();
-
+  const { logout } = useAuth();
   return (
     <aside
       className={`h-screen flex flex-col border-r border-slate-200 bg-white transition-all duration-300
@@ -42,9 +45,16 @@ const Sidebar = () => {
         </div>
       </nav>
       {/* Footer */}
-
-      <div className="border-t border-slate-200 p-4">
+      <div className="border-t border-slate-200 p-4 space-y-3">
         <UserProfile />
+
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={18} />
+          {!isCollapsed && <span>Logout</span>}
+        </button>
       </div>
     </aside>
   );

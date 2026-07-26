@@ -122,7 +122,7 @@ export const addPurchase = mutation({
           gst: item.gst,
 
           currentStock: item.quantity,
-
+          minimumStock: 10,
           rackLocation: "",
 
           status: "Active",
