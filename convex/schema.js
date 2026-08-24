@@ -45,7 +45,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
 
     rackLocation: v.optional(v.string()),
-
+    imageId: v.optional(v.id("_storage")),
     status: v.string(),
 
     createdAt: v.number(),

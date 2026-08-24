@@ -36,9 +36,7 @@ const MedicineTable = ({ medicines }) => {
     if (!confirmed) return;
 
     try {
-      await deleteMedicine({
-        id,
-      });
+      await deleteMedicine({ id });
 
       toast.success(`${medicineName} deleted successfully.`);
     } catch (err) {
@@ -72,17 +70,33 @@ const MedicineTable = ({ medicines }) => {
                   key={medicine._id}
                   className="border-t border-slate-200 hover:bg-slate-50"
                 >
+                  {/* Medicine with Image */}
                   <td className="px-5 py-4">
-                    <div>
-                      <h3 className="font-semibold text-slate-800">
-                        {medicine.medicineName}
-                      </h3>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                        {medicine.imageUrl ? (
+                          <img
+                            src={medicine.imageUrl}
+                            alt={medicine.medicineName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl">💊</span>
+                        )}
+                      </div>
 
-                      <p className="text-sm text-slate-500">
-                        {medicine.category}
-                      </p>
+                      <div>
+                        <h3 className="font-semibold text-slate-800">
+                          {medicine.medicineName}
+                        </h3>
+
+                        <p className="text-sm text-slate-500">
+                          {medicine.category}
+                        </p>
+                      </div>
                     </div>
                   </td>
+
                   <td className="px-5 py-4">{medicine.company}</td>
 
                   <td className="px-5 py-4">{medicine.batchNumber}</td>
@@ -90,6 +104,7 @@ const MedicineTable = ({ medicines }) => {
                   <td className="px-5 py-4">
                     {format(new Date(medicine.expiryDate), "dd MMM yyyy")}
                   </td>
+
                   <td className="px-5 py-4">
                     <span className="rounded-lg bg-slate-100 px-3 py-1 font-medium">
                       {medicine.currentStock}

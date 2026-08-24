@@ -2,8 +2,6 @@ import {
   ArrowLeft,
   Pencil,
   Pill,
-  Package,
-  CalendarDays,
   Boxes,
   IndianRupee,
   FileText,
@@ -11,12 +9,9 @@ import {
 
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "convex/react";
-
 import { api } from "../../../convex/_generated/api";
 
-import PageHeader from "../../components/common/PageHeader";
 import AppButton from "../../components/common/AppButton";
-
 import InfoCard from "../../components/common/InfoCard";
 import InfoRow from "../../components/common/InfoRow";
 
@@ -32,10 +27,52 @@ const ViewMedicine = () => {
     return <div className="p-6">Loading...</div>;
   }
 
+  if (medicine === null) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-700">
+            Medicine Not Found
+          </h2>
+
+          <button
+            onClick={() => navigate("/medicines")}
+            className="mt-4 text-blue-600 hover:underline"
+          >
+            Back to Medicines
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const stock = medicine.currentStock ?? 0;
+  const minimumStock = medicine.minimumStock ?? 10;
+
+  const stockStatus =
+    stock === 0
+      ? {
+          text: "Out of Stock",
+          className: "bg-red-100 text-red-700",
+        }
+      : stock <= minimumStock
+        ? {
+            text: "Low Stock",
+            className: "bg-yellow-100 text-yellow-700",
+          }
+        : {
+            text: "In Stock",
+            className: "bg-green-100 text-green-700",
+          };
+
   return (
     <div className="space-y-6">
+      {/* =====================================================
+          Header
+      ====================================================== */}
+
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-4xl font-bold text-slate-800">
               Medicine Details
@@ -65,46 +102,66 @@ const ViewMedicine = () => {
         </div>
       </div>
 
-      {/* Summary Card */}
+      {/* =====================================================
+          Summary Card
+      ====================================================== */}
+
       <div className="rounded-3xl bg-[#EAF8F3] p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
-          {/* LEFT */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_1fr]">
+          {/* =================================================
+              LEFT - Medicine Image
+          ================================================== */}
 
           <div className="rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 p-8 text-white">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white">
-              <Pill size={46} className="text-emerald-600" />
+            {/* Medicine Image */}
+
+            <div className="flex h-64 w-full items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md">
+              {medicine.imageUrl ? (
+                <img
+                  src={medicine.imageUrl}
+                  alt={medicine.medicineName}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <Pill size={70} className="text-emerald-500" />
+
+                  <p className="mt-3 text-sm text-slate-400">
+                    No Image Available
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* Medicine Name */}
 
             <h2 className="mt-8 text-3xl font-bold">{medicine.medicineName}</h2>
 
             <p className="mt-2 text-emerald-100">{medicine.company}</p>
 
-            <div className="mt-8 space-y-3">
-              <div className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
-                {medicine.category}
+            <div className="mt-8 space-y-4">
+              <div>
+                <span className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
+                  {medicine.category}
+                </span>
               </div>
 
               <div>
                 <span
-                  className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                    medicine.stock > medicine.minimumStock
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                  className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ${stockStatus.className}`}
                 >
-                  {medicine.stock > medicine.minimumStock
-                    ? "In Stock"
-                    : "Low Stock"}
+                  {stockStatus.text}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right Section */}
-          {/* RIGHT */}
+          {/* =================================================
+              RIGHT - Quick Information
+          ================================================== */}
 
           <div className="rounded-3xl bg-white p-8 shadow-sm">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-5">
                 <p className="text-sm text-slate-500">Batch Number</p>
 
@@ -125,7 +182,7 @@ const ViewMedicine = () => {
                 <p className="text-sm text-slate-500">Current Stock</p>
 
                 <h3 className="mt-2 text-2xl font-bold text-slate-800">
-                  {medicine.currentStock}
+                  {stock}
                 </h3>
               </div>
 
@@ -140,6 +197,10 @@ const ViewMedicine = () => {
           </div>
         </div>
       </div>
+
+      {/* =====================================================
+          Medicine Information + Inventory
+      ====================================================== */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Medicine Information */}
@@ -167,9 +228,9 @@ const ViewMedicine = () => {
           icon={<Boxes className="h-5 w-5 text-green-600" />}
           title="Inventory"
         >
-          <InfoRow label="Current Stock" value={medicine.currentStock} />
+          <InfoRow label="Current Stock" value={stock} />
 
-          <InfoRow label="Minimum Stock" value={medicine.minimumStock} />
+          <InfoRow label="Minimum Stock" value={minimumStock} />
 
           <InfoRow label="Rack Location" value={medicine.rackLocation || "-"} />
 
@@ -177,25 +238,20 @@ const ViewMedicine = () => {
             label="Status"
             value={
               <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  medicine.stock === 0
-                    ? "bg-red-100 text-red-700"
-                    : medicine.stock <= medicine.minimumStock
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                }`}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${stockStatus.className}`}
               >
-                {medicine.stock === 0
-                  ? "Out of Stock"
-                  : medicine.stock <= medicine.minimumStock
-                    ? "Low Stock"
-                    : "In Stock"}
+                {stockStatus.text}
               </span>
             }
           />
         </InfoCard>
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+      {/* =====================================================
+          Pricing + Notes
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Pricing */}
 
         <InfoCard
@@ -215,7 +271,7 @@ const ViewMedicine = () => {
         {/* Notes */}
 
         <InfoCard
-          icon={<FileText className="h-8 w-8 text-orange-600" />}
+          icon={<FileText className="h-5 w-5 text-orange-600" />}
           title="Notes"
         >
           <div className="rounded-xl bg-slate-50 p-4 text-slate-600">

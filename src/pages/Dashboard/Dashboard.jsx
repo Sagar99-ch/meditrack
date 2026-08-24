@@ -16,6 +16,8 @@ const Dashboard = () => {
   const todayExpiring = useQuery(api.reports.getTodayExpiringMedicines);
 
   const [openAlert, setOpenAlert] = useState(false);
+
+  
   useEffect(() => {
     if (!todayExpiring || todayExpiring.length === 0) return;
 

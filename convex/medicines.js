@@ -1,48 +1,86 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// =====================================================
+// Generate Medicine Image Upload URL
+// =====================================================
+
+export const generateUploadUrl = mutation({
+  args: {},
+
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// =====================================================
 // Add Medicine
+// =====================================================
+
 export const addMedicine = mutation({
   args: {
     medicineName: v.string(),
-    genericName: v.optional(v.string()),
-    company: v.optional(v.string()),
+    company: v.string(),
     category: v.string(),
     unit: v.string(),
 
     batchNumber: v.string(),
-    manufacturingDate: v.optional(v.string()),
     expiryDate: v.string(),
 
     purchasePrice: v.number(),
     sellingPrice: v.number(),
-    gst: v.number(),
 
     currentStock: v.number(),
     minimumStock: v.number(),
 
-    notes: v.optional(v.string()),
+    gst: v.number(),
 
     rackLocation: v.optional(v.string()),
+    notes: v.optional(v.string()),
 
     status: v.string(),
+
+    imageId: v.optional(v.id("_storage")),
   },
 
   handler: async (ctx, args) => {
     return await ctx.db.insert("medicines", {
       ...args,
+
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
   },
 });
 
+// =====================================================
 // Get All Medicines
+// =====================================================
+
 export const getMedicines = query({
   handler: async (ctx) => {
-    return await ctx.db.query("medicines").order("desc").collect();
+    const medicines = await ctx.db.query("medicines").order("desc").collect();
+
+    return await Promise.all(
+      medicines.map(async (medicine) => {
+        let imageUrl = null;
+
+        if (medicine.imageId) {
+          imageUrl = await ctx.storage.getUrl(medicine.imageId);
+        }
+
+        return {
+          ...medicine,
+          imageUrl,
+        };
+      })
+    );
   },
 });
+
+// =====================================================
+// Get Medicine By ID
+// =====================================================
 
 export const getMedicineById = query({
   args: {
@@ -50,9 +88,62 @@ export const getMedicineById = query({
   },
 
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const medicine = await ctx.db.get(args.id);
+
+    if (!medicine) {
+      return null;
+    }
+
+    let imageUrl = null;
+
+    if (medicine.imageId) {
+      imageUrl = await ctx.storage.getUrl(medicine.imageId);
+    }
+
+    return {
+      ...medicine,
+      imageUrl,
+    };
   },
 });
+
+// =====================================================
+// Dashboard Statistics
+// =====================================================
+
+export const getDashboardStats = query({
+  handler: async (ctx) => {
+    const medicines = await ctx.db.query("medicines").collect();
+
+    const totalMedicines = medicines.length;
+
+    const totalStock = medicines.reduce(
+      (total, medicine) => total + (medicine.currentStock || 0),
+      0
+    );
+
+    const lowStockMedicines = medicines.filter(
+      (medicine) =>
+        (medicine.currentStock || 0) > 0 &&
+        (medicine.currentStock || 0) <= (medicine.minimumStock || 10)
+    ).length;
+
+    const outOfStockMedicines = medicines.filter(
+      (medicine) => (medicine.currentStock || 0) === 0
+    ).length;
+
+    return {
+      totalMedicines,
+      totalStock,
+      lowStockMedicines,
+      outOfStockMedicines,
+    };
+  },
+});
+
+// =====================================================
+// Update Medicine
+// =====================================================
 
 export const updateMedicine = mutation({
   args: {
@@ -76,26 +167,35 @@ export const updateMedicine = mutation({
 
     rackLocation: v.optional(v.string()),
     notes: v.optional(v.string()),
+
+    status: v.string(),
+
+    imageId: v.optional(v.id("_storage")),
   },
 
   handler: async (ctx, args) => {
     const { id, ...data } = args;
+
+    const existingMedicine = await ctx.db.get(id);
+
+    if (!existingMedicine) {
+      throw new Error("Medicine not found");
+    }
+
+    // If a new image is uploaded,
+    // delete the old image from storage.
+    if (
+      data.imageId &&
+      existingMedicine.imageId &&
+      data.imageId !== existingMedicine.imageId
+    ) {
+      await ctx.storage.delete(existingMedicine.imageId);
+    }
+
     await ctx.db.patch(id, {
       ...data,
       updatedAt: Date.now(),
     });
-
-    return { success: true };
-  },
-});
-
-export const deleteMedicine = mutation({
-  args: {
-    id: v.id("medicines"),
-  },
-
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
 
     return {
       success: true,
@@ -103,36 +203,32 @@ export const deleteMedicine = mutation({
   },
 });
 
-export const getDashboardStats = query({
-  handler: async (ctx) => {
-    const medicines = await ctx.db.query("medicines").collect();
+// =====================================================
+// Delete Medicine
+// =====================================================
 
-    const totalMedicines = medicines.length;
+export const deleteMedicine = mutation({
+  args: {
+    id: v.id("medicines"),
+  },
 
-    const totalStock = medicines.reduce(
-      (sum, medicine) => sum + medicine.currentStock,
-      0
-    );
+  handler: async (ctx, args) => {
+    const medicine = await ctx.db.get(args.id);
 
-    // Agar minimumStock field add karoge to ye aur accurate hoga
-    const lowStock = medicines.filter(
-      (medicine) => medicine.currentStock <= 10
-    ).length;
+    if (!medicine) {
+      throw new Error("Medicine not found");
+    }
 
-    const today = new Date();
-    const next30Days = new Date();
-    next30Days.setDate(today.getDate() + 30);
+    // Delete medicine image from Convex Storage
+    if (medicine.imageId) {
+      await ctx.storage.delete(medicine.imageId);
+    }
 
-    const expiringSoon = medicines.filter((medicine) => {
-      const expiry = new Date(medicine.expiryDate);
-      return expiry >= today && expiry <= next30Days;
-    }).length;
+    // Delete medicine
+    await ctx.db.delete(args.id);
 
     return {
-      totalMedicines,
-      totalStock,
-      lowStock,
-      expiringSoon,
+      success: true,
     };
   },
 });
