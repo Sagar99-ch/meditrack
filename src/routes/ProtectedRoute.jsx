@@ -1,13 +1,22 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = localStorage.getItem("meditrack_auth");
+  const userData = sessionStorage.getItem("currentUser");
 
-  if (!isLoggedIn) {
+  let user = null;
+
+  try {
+    user = userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Invalid session data:", error);
+    sessionStorage.removeItem("currentUser");
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return children || <Outlet />;
 };
 
 export default ProtectedRoute;

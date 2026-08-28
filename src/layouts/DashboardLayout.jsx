@@ -1,21 +1,21 @@
 import { Outlet } from "react-router-dom";
 
 import Sidebar from "../components/layout/Sidebar";
-import Navbar from "../components/layout/Navbar";
-import PageContainer from "../components/layout/PageContainer";
+import AutoLogout from "../pages/auth/AutoLogout";
 
 const DashboardLayout = () => {
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Auto Logout */}
+      <AutoLogout />
+
+      {/* Sidebar */}
       <Sidebar />
 
-      <div className="flex flex-col flex-1">
-        <Navbar />
-
-        <PageContainer>
-          <Outlet />
-        </PageContainer>
-      </div>
+      {/* Main Content */}
+      <main className="min-w-0 flex-1 overflow-y-auto p-6">
+        <Outlet />
+      </main>
     </div>
   );
 };

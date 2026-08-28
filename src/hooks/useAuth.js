@@ -5,27 +5,64 @@ const AUTH_KEY = "meditrack_auth";
 function useAuth() {
   const navigate = useNavigate();
 
+  // =====================================================
   // Login
+  // =====================================================
+
   const login = (user) => {
-    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-    navigate("/", { replace: true });
+    // Session storage use karenge
+    sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
+
+    // AutoLogout ke liye currentUser bhi maintain kar rahe hain
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+
+    navigate("/", {
+      replace: true,
+    });
   };
 
+  // =====================================================
   // Logout
+  // =====================================================
+
   const logout = () => {
-    localStorage.removeItem(AUTH_KEY);
-    navigate("/login", { replace: true });
+    sessionStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem("currentUser");
+
+    navigate("/login", {
+      replace: true,
+    });
   };
 
-  // Check Auth
+  // =====================================================
+  // Check Authentication
+  // =====================================================
+
   const isAuthenticated = () => {
-    return !!localStorage.getItem(AUTH_KEY);
+    return !!sessionStorage.getItem(AUTH_KEY);
   };
 
+  // =====================================================
   // Current User
+  // =====================================================
+
   const getUser = () => {
-    const user = localStorage.getItem(AUTH_KEY);
-    return user ? JSON.parse(user) : null;
+    const user = sessionStorage.getItem(AUTH_KEY);
+
+    if (!user) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(user);
+    } catch (error) {
+      console.error("Invalid authentication data:", error);
+
+      sessionStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem("currentUser");
+
+      return null;
+    }
   };
 
   return {

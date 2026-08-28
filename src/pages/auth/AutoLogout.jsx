@@ -1,41 +1,24 @@
 import { useEffect } from "react";
 
-const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+const INACTIVITY_TIME = 30 * 60 * 1000; // 30 minutes
 
 const AutoLogout = () => {
   useEffect(() => {
-    const checkUser = () => {
-      return localStorage.getItem("currentUser");
-    };
-
-    let inactivityTimer;
+    let timer;
 
     const logout = () => {
-      localStorage.removeItem("currentUser");
+      sessionStorage.removeItem("currentUser");
 
-      // Redirect to login
-      window.location.href = "/login";
+      window.location.replace("/login");
     };
 
     const resetTimer = () => {
-      clearTimeout(inactivityTimer);
+      clearTimeout(timer);
 
-      // Agar user logged in nahi hai to timer mat chalao
-      if (!checkUser()) {
-        return;
-      }
-
-      // Login page par timer mat chalao
-      if (window.location.pathname === "/login") {
-        return;
-      }
-
-      inactivityTimer = setTimeout(() => {
-        logout();
-      }, INACTIVITY_LIMIT);
+      timer = setTimeout(logout, INACTIVITY_TIME);
     };
 
-    const activityEvents = [
+    const events = [
       "mousemove",
       "mousedown",
       "keydown",
@@ -44,17 +27,16 @@ const AutoLogout = () => {
       "click",
     ];
 
-    activityEvents.forEach((event) => {
+    events.forEach((event) => {
       window.addEventListener(event, resetTimer);
     });
 
-    // Initial timer
     resetTimer();
 
     return () => {
-      clearTimeout(inactivityTimer);
+      clearTimeout(timer);
 
-      activityEvents.forEach((event) => {
+      events.forEach((event) => {
         window.removeEventListener(event, resetTimer);
       });
     };
