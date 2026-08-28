@@ -40,7 +40,9 @@ export const addMedicine = mutation({
 
     status: v.string(),
 
-    imageId: v.optional(v.id("_storage")),
+    // Medicine Images
+    frontImageId: v.optional(v.id("_storage")),
+    backImageId: v.optional(v.id("_storage")),
   },
 
   handler: async (ctx, args) => {
@@ -63,15 +65,17 @@ export const getMedicines = query({
 
     return await Promise.all(
       medicines.map(async (medicine) => {
-        let imageUrl = null;
+        let frontImageUrl = null;
 
-        if (medicine.imageId) {
-          imageUrl = await ctx.storage.getUrl(medicine.imageId);
+        if (medicine.frontImageId) {
+          frontImageUrl = await ctx.storage.getUrl(medicine.frontImageId);
         }
 
         return {
           ...medicine,
-          imageUrl,
+
+          // List page ke liye sirf front image
+          frontImageUrl,
         };
       })
     );
@@ -94,15 +98,25 @@ export const getMedicineById = query({
       return null;
     }
 
-    let imageUrl = null;
+    let frontImageUrl = null;
+    let backImageUrl = null;
 
-    if (medicine.imageId) {
-      imageUrl = await ctx.storage.getUrl(medicine.imageId);
+    // Front Image
+    if (medicine.frontImageId) {
+      frontImageUrl = await ctx.storage.getUrl(medicine.frontImageId);
+    }
+
+    // Back Image
+    if (medicine.backImageId) {
+      backImageUrl = await ctx.storage.getUrl(medicine.backImageId);
     }
 
     return {
       ...medicine,
-      imageUrl,
+
+      // View page par dono images
+      frontImageUrl,
+      backImageUrl,
     };
   },
 });
@@ -170,7 +184,9 @@ export const updateMedicine = mutation({
 
     status: v.string(),
 
-    imageId: v.optional(v.id("_storage")),
+    // Medicine Images
+    frontImageId: v.optional(v.id("_storage")),
+    backImageId: v.optional(v.id("_storage")),
   },
 
   handler: async (ctx, args) => {
@@ -182,15 +198,33 @@ export const updateMedicine = mutation({
       throw new Error("Medicine not found");
     }
 
-    // If a new image is uploaded,
-    // delete the old image from storage.
+    // =================================================
+    // Delete Old Front Image
+    // =================================================
+
     if (
-      data.imageId &&
-      existingMedicine.imageId &&
-      data.imageId !== existingMedicine.imageId
+      data.frontImageId &&
+      existingMedicine.frontImageId &&
+      data.frontImageId !== existingMedicine.frontImageId
     ) {
-      await ctx.storage.delete(existingMedicine.imageId);
+      await ctx.storage.delete(existingMedicine.frontImageId);
     }
+
+    // =================================================
+    // Delete Old Back Image
+    // =================================================
+
+    if (
+      data.backImageId &&
+      existingMedicine.backImageId &&
+      data.backImageId !== existingMedicine.backImageId
+    ) {
+      await ctx.storage.delete(existingMedicine.backImageId);
+    }
+
+    // =================================================
+    // Update Medicine
+    // =================================================
 
     await ctx.db.patch(id, {
       ...data,
@@ -219,12 +253,26 @@ export const deleteMedicine = mutation({
       throw new Error("Medicine not found");
     }
 
-    // Delete medicine image from Convex Storage
-    if (medicine.imageId) {
-      await ctx.storage.delete(medicine.imageId);
+    // =================================================
+    // Delete Front Image
+    // =================================================
+
+    if (medicine.frontImageId) {
+      await ctx.storage.delete(medicine.frontImageId);
     }
 
-    // Delete medicine
+    // =================================================
+    // Delete Back Image
+    // =================================================
+
+    if (medicine.backImageId) {
+      await ctx.storage.delete(medicine.backImageId);
+    }
+
+    // =================================================
+    // Delete Medicine
+    // =================================================
+
     await ctx.db.delete(args.id);
 
     return {

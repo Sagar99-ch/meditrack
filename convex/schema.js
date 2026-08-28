@@ -2,28 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  transactions: defineTable({
-    transactionType: v.string(), // Income | Expense
-
-    category: v.string(),
-
-    partyName: v.string(),
-
-    amount: v.number(),
-
-    paymentMethod: v.string(),
-
-    transactionDate: v.string(),
-
-    referenceNo: v.optional(v.string()),
-
-    notes: v.optional(v.string()),
-
-    createdAt: v.number(),
-
-    updatedAt: v.number(),
-  }),
-
   medicines: defineTable({
     medicineName: v.string(),
     genericName: v.optional(v.string()),
@@ -42,15 +20,28 @@ export default defineSchema({
     currentStock: v.number(),
     minimumStock: v.number(),
 
+    rackLocation: v.optional(v.string()),
+
+    status: v.string(),
+
     notes: v.optional(v.string()),
 
-    rackLocation: v.optional(v.string()),
+    // =====================================================
+    // Medicine Images
+    // =====================================================
+
+    // Old image field
+    // Existing medicines ke liye compatibility
     imageId: v.optional(v.id("_storage")),
-    status: v.string(),
+
+    // New Front / Back images
+    frontImageId: v.optional(v.id("_storage")),
+    backImageId: v.optional(v.id("_storage")),
 
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_name", ["medicineName"]),
+
   suppliers: defineTable({
     supplierName: v.string(),
     companyName: v.string(),
@@ -134,7 +125,7 @@ export default defineSchema({
     medicineName: v.string(),
 
     previousStock: v.number(),
-    adjustmentType: v.string(), // Increase | Decrease
+    adjustmentType: v.string(),
     quantity: v.number(),
     newStock: v.number(),
 

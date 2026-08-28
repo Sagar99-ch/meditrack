@@ -31,8 +31,12 @@ const EditMedicine = () => {
 
   const generateUploadUrl = useMutation(api.medicines.generateUploadUrl);
 
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [frontImage, setFrontImage] = useState(null);
+  const [backImage, setBackImage] = useState(null);
+
+  const [frontPreview, setFrontPreview] = useState("");
+  const [backPreview, setBackPreview] = useState("");
+
   const [saving, setSaving] = useState(false);
 
   const {
@@ -69,41 +73,92 @@ const EditMedicine = () => {
         notes: medicine.notes || "",
       });
 
-      // Existing image
-      if (medicine.imageUrl) {
-        setImagePreview(medicine.imageUrl);
+      // Existing Front Image
+      if (medicine.frontImageUrl) {
+        setFrontPreview(medicine.frontImageUrl);
       } else {
-        setImagePreview("");
+        setFrontPreview("");
+      }
+
+      // Existing Back Image
+      if (medicine.backImageUrl) {
+        setBackPreview(medicine.backImageUrl);
+      } else {
+        setBackPreview("");
       }
     }
   }, [medicine, reset]);
 
   // =====================================================
-  // Image Change
+  // Validate Image
   // =====================================================
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0];
+  const validateImage = (file) => {
+    if (!file) return false;
 
-    if (!file) return;
-
-    // Validate image type
     if (!file.type.startsWith("image/")) {
       toast.error("Please select a valid image file.");
-      return;
+      return false;
     }
 
-    // 5 MB limit
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size must be less than 5 MB.");
-      return;
+      return false;
     }
 
-    setImageFile(file);
+    return true;
+  };
 
-    const previewUrl = URL.createObjectURL(file);
+  // =====================================================
+  // Front Image Change
+  // =====================================================
 
-    setImagePreview(previewUrl);
+  const handleFrontImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!validateImage(file)) return;
+
+    setFrontImage(file);
+    setFrontPreview(URL.createObjectURL(file));
+  };
+
+  // =====================================================
+  // Back Image Change
+  // =====================================================
+
+  const handleBackImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!validateImage(file)) return;
+
+    setBackImage(file);
+    setBackPreview(URL.createObjectURL(file));
+  };
+
+  // =====================================================
+  // Upload Image
+  // =====================================================
+
+  const uploadImage = async (file) => {
+    if (!file) return null;
+
+    const uploadUrl = await generateUploadUrl();
+
+    const result = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    if (!result.ok) {
+      throw new Error("Image upload failed.");
+    }
+
+    const data = await result.json();
+
+    return data.storageId;
   };
 
   // =====================================================
@@ -114,35 +169,19 @@ const EditMedicine = () => {
     try {
       setSaving(true);
 
-      let imageId = medicine.imageId;
+      // Keep existing images if user doesn't select new ones
+      let frontImageId = medicine.frontImageId;
+      let backImageId = medicine.backImageId;
 
-      // =================================================
-      // Upload New Image
-      // =================================================
-
-      if (imageFile) {
-        const uploadUrl = await generateUploadUrl();
-
-        const uploadResult = await fetch(uploadUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": imageFile.type,
-          },
-          body: imageFile,
-        });
-
-        if (!uploadResult.ok) {
-          throw new Error("Image upload failed.");
-        }
-
-        const uploadData = await uploadResult.json();
-
-        imageId = uploadData.storageId;
+      // Upload new Front Image
+      if (frontImage) {
+        frontImageId = await uploadImage(frontImage);
       }
 
-      // =================================================
-      // Update Medicine
-      // =================================================
+      // Upload new Back Image
+      if (backImage) {
+        backImageId = await uploadImage(backImage);
+      }
 
       await updateMedicine({
         id,
@@ -166,18 +205,19 @@ const EditMedicine = () => {
         rackLocation: data.rackLocation || "",
         notes: data.notes || "",
 
-        // IMPORTANT:
-        // Backend requires status
+        // Required backend field
         status: medicine.status || "Active",
 
-        imageId,
+        // Images
+        frontImageId,
+        backImageId,
       });
 
       toast.success("Medicine updated successfully.");
 
       navigate("/medicines");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
 
       toast.error("Update failed.");
     } finally {
@@ -238,49 +278,49 @@ const EditMedicine = () => {
         </div>
       </div>
 
-      {/* =====================================================
-          Form
-      ====================================================== */}
-
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-2xl border border-slate-200 bg-white p-6"
       >
         {/* =================================================
-            Medicine Image
+            Medicine Images
         ================================================== */}
 
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">
-            💊 Medicine Image
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <h2 className="mb-6 text-xl font-bold text-slate-800">
+            💊 Medicine Images
           </h2>
 
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {/* Image Preview */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* =================================================
+                Front Image
+            ================================================== */}
 
-            <div className="flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white">
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt={medicine.medicineName}
-                  className="h-full w-full object-contain"
-                />
-              ) : (
-                <div className="text-4xl">💊</div>
-              )}
-            </div>
-
-            {/* Upload */}
-
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Change Medicine Image
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <label className="mb-3 block text-sm font-medium text-slate-700">
+                Front Image
               </label>
+
+              <div className="mb-4 flex h-56 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                {frontPreview ? (
+                  <img
+                    src={frontPreview}
+                    alt={`${medicine.medicineName} Front`}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-slate-400">
+                    <div className="text-5xl">💊</div>
+
+                    <p className="mt-2 text-sm">No front image</p>
+                  </div>
+                )}
+              </div>
 
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
-                onChange={handleImageChange}
+                onChange={handleFrontImageChange}
                 disabled={saving}
                 className="block w-full text-sm text-slate-600
                 file:mr-4
@@ -294,23 +334,66 @@ const EditMedicine = () => {
                 hover:file:bg-blue-700"
               />
 
-              <p className="mt-2 text-xs text-slate-500">
-                JPG, PNG or WebP. Maximum size: 5 MB.
-              </p>
-
-              {imageFile && (
-                <p className="mt-2 text-sm font-medium text-green-600">
-                  New image selected: {imageFile.name}
+              {frontImage && (
+                <p className="mt-2 text-xs text-green-600">
+                  New front image: {frontImage.name}
                 </p>
               )}
+            </div>
 
-              {!imageFile && medicine.imageUrl && (
-                <p className="mt-2 text-sm text-slate-500">
-                  Current medicine image is being used.
+            {/* =================================================
+                Back Image
+            ================================================== */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <label className="mb-3 block text-sm font-medium text-slate-700">
+                Back Image
+              </label>
+
+              <div className="mb-4 flex h-56 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                {backPreview ? (
+                  <img
+                    src={backPreview}
+                    alt={`${medicine.medicineName} Back`}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-slate-400">
+                    <div className="text-5xl">📦</div>
+
+                    <p className="mt-2 text-sm">No back image</p>
+                  </div>
+                )}
+              </div>
+
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleBackImageChange}
+                disabled={saving}
+                className="block w-full text-sm text-slate-600
+                file:mr-4
+                file:rounded-xl
+                file:border-0
+                file:bg-blue-600
+                file:px-4
+                file:py-2
+                file:font-medium
+                file:text-white
+                hover:file:bg-blue-700"
+              />
+
+              {backImage && (
+                <p className="mt-2 text-xs text-green-600">
+                  New back image: {backImage.name}
                 </p>
               )}
             </div>
           </div>
+
+          <p className="mt-4 text-xs text-slate-500">
+            JPG, PNG or WebP. Maximum size: 5 MB per image.
+          </p>
         </div>
 
         {/* =================================================

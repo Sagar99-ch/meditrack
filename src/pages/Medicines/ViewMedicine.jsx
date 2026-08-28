@@ -19,13 +19,22 @@ const ViewMedicine = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const medicine = useQuery(api.medicines.getMedicineById, {
-    id,
-  });
+  const medicine = useQuery(
+    api.medicines.getMedicineById,
+    id ? { id } : "skip"
+  );
+
+  // =====================================================
+  // Loading
+  // =====================================================
 
   if (medicine === undefined) {
     return <div className="p-6">Loading...</div>;
   }
+
+  // =====================================================
+  // Not Found
+  // =====================================================
 
   if (medicine === null) {
     return (
@@ -46,16 +55,20 @@ const ViewMedicine = () => {
     );
   }
 
-  const stock = medicine.currentStock ?? 0;
-  const minimumStock = medicine.minimumStock ?? 10;
+  // =====================================================
+  // Stock Status
+  // =====================================================
+
+  const currentStock = medicine.currentStock || 0;
+  const minimumStock = medicine.minimumStock || 0;
 
   const stockStatus =
-    stock === 0
+    currentStock === 0
       ? {
           text: "Out of Stock",
           className: "bg-red-100 text-red-700",
         }
-      : stock <= minimumStock
+      : currentStock <= minimumStock
         ? {
             text: "Low Stock",
             className: "bg-yellow-100 text-yellow-700",
@@ -72,7 +85,7 @@ const ViewMedicine = () => {
       ====================================================== */}
 
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-4xl font-bold text-slate-800">
               Medicine Details
@@ -103,52 +116,40 @@ const ViewMedicine = () => {
       </div>
 
       {/* =====================================================
-          Summary Card
+          Summary
       ====================================================== */}
 
       <div className="rounded-3xl bg-[#EAF8F3] p-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_1fr]">
           {/* =================================================
-              LEFT - Medicine Image
+              LEFT - Front Image
           ================================================== */}
 
           <div className="rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 p-8 text-white">
-            {/* Medicine Image */}
-
-            <div className="flex h-64 w-full items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md">
-              {medicine.imageUrl ? (
+            <div className="flex h-72 w-full items-center justify-center overflow-hidden rounded-2xl bg-white">
+              {medicine.frontImageUrl ? (
                 <img
-                  src={medicine.imageUrl}
-                  alt={medicine.medicineName}
+                  src={medicine.frontImageUrl}
+                  alt={`${medicine.medicineName} Front`}
                   className="h-full w-full object-contain"
                 />
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                  <Pill size={70} className="text-emerald-500" />
-
-                  <p className="mt-3 text-sm text-slate-400">
-                    No Image Available
-                  </p>
-                </div>
+                <Pill size={90} className="text-emerald-500" />
               )}
             </div>
 
-            {/* Medicine Name */}
-
             <h2 className="mt-8 text-3xl font-bold">{medicine.medicineName}</h2>
 
-            <p className="mt-2 text-emerald-100">{medicine.company}</p>
+            <p className="mt-2 text-emerald-100">{medicine.company || "-"}</p>
 
             <div className="mt-8 space-y-4">
-              <div>
-                <span className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
-                  {medicine.category}
-                </span>
+              <div className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
+                {medicine.category}
               </div>
 
               <div>
                 <span
-                  className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ${stockStatus.className}`}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${stockStatus.className}`}
                 >
                   {stockStatus.text}
                 </span>
@@ -157,7 +158,7 @@ const ViewMedicine = () => {
           </div>
 
           {/* =================================================
-              RIGHT - Quick Information
+              RIGHT - Summary Information
           ================================================== */}
 
           <div className="rounded-3xl bg-white p-8 shadow-sm">
@@ -182,7 +183,7 @@ const ViewMedicine = () => {
                 <p className="text-sm text-slate-500">Current Stock</p>
 
                 <h3 className="mt-2 text-2xl font-bold text-slate-800">
-                  {stock}
+                  {currentStock}
                 </h3>
               </div>
 
@@ -193,6 +194,72 @@ const ViewMedicine = () => {
                   {medicine.rackLocation || "-"}
                 </h3>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================
+          Front + Back Images
+      ====================================================== */}
+
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-slate-800">
+            📷 Medicine Images
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Front and back images of the medicine.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Front */}
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="mb-4 text-lg font-semibold text-slate-700">
+              Front Image
+            </h3>
+
+            <div className="flex h-80 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              {medicine.frontImageUrl ? (
+                <img
+                  src={medicine.frontImageUrl}
+                  alt={`${medicine.medicineName} Front`}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="text-center text-slate-400">
+                  <Pill size={60} className="mx-auto" />
+
+                  <p className="mt-3 text-sm">No front image available</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Back */}
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="mb-4 text-lg font-semibold text-slate-700">
+              Back Image
+            </h3>
+
+            <div className="flex h-80 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              {medicine.backImageUrl ? (
+                <img
+                  src={medicine.backImageUrl}
+                  alt={`${medicine.medicineName} Back`}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="text-center text-slate-400">
+                  <Boxes size={60} className="mx-auto" />
+
+                  <p className="mt-3 text-sm">No back image available</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -211,7 +278,7 @@ const ViewMedicine = () => {
         >
           <InfoRow label="Medicine Name" value={medicine.medicineName} />
 
-          <InfoRow label="Company" value={medicine.company} />
+          <InfoRow label="Company" value={medicine.company || "-"} />
 
           <InfoRow label="Category" value={medicine.category} />
 
@@ -228,7 +295,7 @@ const ViewMedicine = () => {
           icon={<Boxes className="h-5 w-5 text-green-600" />}
           title="Inventory"
         >
-          <InfoRow label="Current Stock" value={stock} />
+          <InfoRow label="Current Stock" value={currentStock} />
 
           <InfoRow label="Minimum Stock" value={minimumStock} />
 
@@ -274,7 +341,7 @@ const ViewMedicine = () => {
           icon={<FileText className="h-5 w-5 text-orange-600" />}
           title="Notes"
         >
-          <div className="rounded-xl bg-slate-50 p-4 text-slate-600">
+          <div className="rounded-xl bg-slate-50 p-4 text-slate-600 whitespace-pre-wrap">
             {medicine.notes || "No notes available."}
           </div>
         </InfoCard>

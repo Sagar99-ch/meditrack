@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-
 import PageHeader from "../../components/common/PageHeader";
 import AppInput from "../../components/common/AppInput";
 import AppSelect from "../../components/common/AppSelect";
 import AppTextarea from "../../components/common/AppTextarea";
 import AppButton from "../../components/common/AppButton";
-
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -22,10 +20,15 @@ const AddMedicine = () => {
   const navigate = useNavigate();
 
   const addMedicine = useMutation(api.medicines.addMedicine);
+
   const generateUploadUrl = useMutation(api.medicines.generateUploadUrl);
 
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [frontImage, setFrontImage] = useState(null);
+  const [backImage, setBackImage] = useState(null);
+
+  const [frontPreview, setFrontPreview] = useState("");
+  const [backPreview, setBackPreview] = useState("");
+
   const [saving, setSaving] = useState(false);
 
   const {
@@ -35,28 +38,75 @@ const AddMedicine = () => {
   } = useForm();
 
   // =====================================================
-  // Image Selection
+  // Image Validation
   // =====================================================
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
+  const validateImage = (file) => {
+    if (!file) return false;
 
     if (!file.type.startsWith("image/")) {
       toast.error("Please select a valid image file.");
-      return;
+      return false;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size must be less than 5 MB.");
-      return;
+      return false;
     }
 
-    setImageFile(file);
+    return true;
+  };
 
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
+  // =====================================================
+  // Front Image
+  // =====================================================
+
+  const handleFrontImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!validateImage(file)) return;
+
+    setFrontImage(file);
+    setFrontPreview(URL.createObjectURL(file));
+  };
+
+  // =====================================================
+  // Back Image
+  // =====================================================
+
+  const handleBackImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!validateImage(file)) return;
+
+    setBackImage(file);
+    setBackPreview(URL.createObjectURL(file));
+  };
+
+  // =====================================================
+  // Upload Image To Convex Storage
+  // =====================================================
+
+  const uploadImage = async (file) => {
+    if (!file) return null;
+
+    const uploadUrl = await generateUploadUrl();
+
+    const result = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    if (!result.ok) {
+      throw new Error("Image upload failed.");
+    }
+
+    const data = await result.json();
+
+    return data.storageId;
   };
 
   // =====================================================
@@ -67,30 +117,13 @@ const AddMedicine = () => {
     try {
       setSaving(true);
 
-      let imageId = undefined;
+      // Upload Front Image
+      const frontImageId = await uploadImage(frontImage);
 
-      // Upload image to Convex Storage
-      if (imageFile) {
-        const uploadUrl = await generateUploadUrl();
+      // Upload Back Image
+      const backImageId = await uploadImage(backImage);
 
-        const uploadResult = await fetch(uploadUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": imageFile.type,
-          },
-          body: imageFile,
-        });
-
-        if (!uploadResult.ok) {
-          throw new Error("Image upload failed.");
-        }
-
-        const uploadData = await uploadResult.json();
-
-        imageId = uploadData.storageId;
-      }
-
-      // Save medicine
+      // Add Medicine
       await addMedicine({
         medicineName: data.medicineName,
         company: data.company,
@@ -113,7 +146,9 @@ const AddMedicine = () => {
 
         status: "Active",
 
-        imageId,
+        // Images
+        frontImageId,
+        backImageId,
       });
 
       toast.success("Medicine added successfully.");
@@ -130,7 +165,9 @@ const AddMedicine = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* =====================================================
+          Header
+      ====================================================== */}
 
       <PageHeader
         title="Add Medicine"
@@ -141,61 +178,121 @@ const AddMedicine = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-2xl border border-slate-200 bg-white p-6"
       >
-        {/* =====================================================
-            Medicine Image
-        ====================================================== */}
+        {/* =================================================
+            Medicine Images
+        ================================================== */}
 
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">
-            💊 Medicine Image
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <h2 className="mb-6 text-xl font-bold text-slate-800">
+            💊 Medicine Images
           </h2>
 
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {/* Preview */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* =================================================
+                Front Image
+            ================================================== */}
 
-            <div className="flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white">
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Medicine preview"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-sm text-slate-400">No Image</span>
-              )}
-            </div>
-
-            {/* Upload */}
-
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Upload Medicine Image
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <label className="mb-3 block text-sm font-medium text-slate-700">
+                Front Image
               </label>
+
+              <div className="mb-4 flex h-56 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                {frontPreview ? (
+                  <img
+                    src={frontPreview}
+                    alt="Medicine Front"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-slate-400">
+                    <div className="text-5xl">💊</div>
+                    <p className="mt-2 text-sm">Front image preview</p>
+                  </div>
+                )}
+              </div>
 
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
-                onChange={handleImageChange}
+                onChange={handleFrontImageChange}
                 disabled={saving}
-                className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:font-medium file:text-white hover:file:bg-blue-700"
+                className="block w-full text-sm text-slate-600
+                file:mr-4
+                file:rounded-xl
+                file:border-0
+                file:bg-blue-600
+                file:px-4
+                file:py-2
+                file:font-medium
+                file:text-white
+                hover:file:bg-blue-700"
               />
 
-              <p className="mt-2 text-xs text-slate-500">
-                Supported formats: JPG, PNG, WebP. Maximum size: 5 MB.
-              </p>
+              {frontImage && (
+                <p className="mt-2 text-xs text-green-600">
+                  Selected: {frontImage.name}
+                </p>
+              )}
+            </div>
 
-              {imageFile && (
-                <p className="mt-2 text-sm font-medium text-green-600">
-                  Selected: {imageFile.name}
+            {/* =================================================
+                Back Image
+            ================================================== */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <label className="mb-3 block text-sm font-medium text-slate-700">
+                Back Image
+              </label>
+
+              <div className="mb-4 flex h-56 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                {backPreview ? (
+                  <img
+                    src={backPreview}
+                    alt="Medicine Back"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-slate-400">
+                    <div className="text-5xl">📦</div>
+                    <p className="mt-2 text-sm">Back image preview</p>
+                  </div>
+                )}
+              </div>
+
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleBackImageChange}
+                disabled={saving}
+                className="block w-full text-sm text-slate-600
+                file:mr-4
+                file:rounded-xl
+                file:border-0
+                file:bg-blue-600
+                file:px-4
+                file:py-2
+                file:font-medium
+                file:text-white
+                hover:file:bg-blue-700"
+              />
+
+              {backImage && (
+                <p className="mt-2 text-xs text-green-600">
+                  Selected: {backImage.name}
                 </p>
               )}
             </div>
           </div>
+
+          <p className="mt-4 text-xs text-slate-500">
+            JPG, PNG or WebP. Maximum size: 5 MB per image.
+          </p>
         </div>
 
-        {/* =====================================================
+        {/* =================================================
             Medicine Information
-        ====================================================== */}
+        ================================================== */}
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <AppInput
@@ -299,9 +396,9 @@ const AddMedicine = () => {
           />
         </div>
 
-        {/* =====================================================
+        {/* =================================================
             Notes
-        ====================================================== */}
+        ================================================== */}
 
         <div className="mt-5">
           <AppTextarea
@@ -311,9 +408,9 @@ const AddMedicine = () => {
           />
         </div>
 
-        {/* =====================================================
+        {/* =================================================
             Buttons
-        ====================================================== */}
+        ================================================== */}
 
         <div className="mt-8 flex justify-end gap-3">
           <AppButton

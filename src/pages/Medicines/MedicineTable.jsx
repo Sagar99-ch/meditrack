@@ -1,4 +1,4 @@
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { Pencil, Trash2, Eye, Pill } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "convex/react";
@@ -28,6 +28,7 @@ const getStatus = (stock, minimumStock = 10) => {
 
 const MedicineTable = ({ medicines }) => {
   const navigate = useNavigate();
+
   const deleteMedicine = useMutation(api.medicines.deleteMedicine);
 
   const handleDelete = async (id, medicineName) => {
@@ -36,11 +37,14 @@ const MedicineTable = ({ medicines }) => {
     if (!confirmed) return;
 
     try {
-      await deleteMedicine({ id });
+      await deleteMedicine({
+        id,
+      });
 
       toast.success(`${medicineName} deleted successfully.`);
     } catch (err) {
       console.error(err);
+
       toast.error("Failed to delete medicine.");
     }
   };
@@ -49,41 +53,65 @@ const MedicineTable = ({ medicines }) => {
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
         <table className="w-full">
+          {/* =====================================================
+              Header
+          ====================================================== */}
+
           <thead className="bg-slate-100">
             <tr className="text-left text-sm text-slate-700">
               <th className="px-5 py-4">Medicine</th>
+
               <th className="px-5 py-4">Company</th>
+
               <th className="px-5 py-4">Batch</th>
+
               <th className="px-5 py-4">Expiry</th>
+
               <th className="px-5 py-4">Stock</th>
+
               <th className="px-5 py-4">Status</th>
+
               <th className="px-5 py-4 text-center">Action</th>
             </tr>
           </thead>
 
+          {/* =====================================================
+              Body
+          ====================================================== */}
+
           <tbody>
             {medicines.map((medicine) => {
-              const status = getStatus(medicine.currentStock);
+              const status = getStatus(
+                medicine.currentStock,
+                medicine.minimumStock
+              );
 
               return (
                 <tr
                   key={medicine._id}
                   className="border-t border-slate-200 hover:bg-slate-50"
                 >
-                  {/* Medicine with Image */}
+                  {/* =================================================
+                      Medicine + Front Image
+                  ================================================== */}
+
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                        {medicine.imageUrl ? (
+                    <div className="flex items-center gap-4">
+                      {/* Front Image */}
+
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                        {medicine.frontImageUrl ? (
                           <img
-                            src={medicine.imageUrl}
+                            src={medicine.frontImageUrl}
                             alt={medicine.medicineName}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain"
                           />
                         ) : (
-                          <span className="text-2xl">💊</span>
+                          <Pill size={26} className="text-slate-400" />
                         )}
                       </div>
+
+                      {/* Medicine Name */}
 
                       <div>
                         <h3 className="font-semibold text-slate-800">
@@ -97,19 +125,29 @@ const MedicineTable = ({ medicines }) => {
                     </div>
                   </td>
 
+                  {/* Company */}
+
                   <td className="px-5 py-4">{medicine.company}</td>
 
+                  {/* Batch */}
+
                   <td className="px-5 py-4">{medicine.batchNumber}</td>
+
+                  {/* Expiry */}
 
                   <td className="px-5 py-4">
                     {format(new Date(medicine.expiryDate), "dd MMM yyyy")}
                   </td>
+
+                  {/* Stock */}
 
                   <td className="px-5 py-4">
                     <span className="rounded-lg bg-slate-100 px-3 py-1 font-medium">
                       {medicine.currentStock}
                     </span>
                   </td>
+
+                  {/* Status */}
 
                   <td className="px-5 py-4">
                     <span
@@ -119,8 +157,14 @@ const MedicineTable = ({ medicines }) => {
                     </span>
                   </td>
 
+                  {/* =================================================
+                      Actions
+                  ================================================== */}
+
                   <td className="px-5 py-4">
                     <div className="flex justify-center gap-2">
+                      {/* View */}
+
                       <button
                         onClick={() =>
                           navigate(`/medicines/view/${medicine._id}`)
@@ -131,6 +175,8 @@ const MedicineTable = ({ medicines }) => {
                         <Eye size={18} className="text-slate-600" />
                       </button>
 
+                      {/* Edit */}
+
                       <button
                         onClick={() =>
                           navigate(`/medicines/edit/${medicine._id}`)
@@ -140,6 +186,8 @@ const MedicineTable = ({ medicines }) => {
                       >
                         <Pencil size={18} className="text-blue-600" />
                       </button>
+
+                      {/* Delete */}
 
                       <button
                         onClick={() =>
