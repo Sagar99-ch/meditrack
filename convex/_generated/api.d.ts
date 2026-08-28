@@ -15,6 +15,7 @@ import type * as reports from "../reports.js";
 import type * as stockAdjustments from "../stockAdjustments.js";
 import type * as suppliers from "../suppliers.js";
 import type * as transactions from "../transactions.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   stockAdjustments: typeof stockAdjustments;
   suppliers: typeof suppliers;
   transactions: typeof transactions;
+  users: typeof users;
 }>;
 
 /**

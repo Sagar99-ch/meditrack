@@ -10,6 +10,7 @@ export const SidebarProvider = ({ children }) => {
   };
 
   const openSidebar = () => setIsCollapsed(false);
+
   const closeSidebar = () => setIsCollapsed(true);
 
   return (

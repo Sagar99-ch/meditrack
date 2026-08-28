@@ -10,10 +10,8 @@ function useAuth() {
   // =====================================================
 
   const login = (user) => {
-    // Session storage use karenge
     sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
 
-    // AutoLogout ke liye currentUser bhi maintain kar rahe hain
     sessionStorage.setItem("currentUser", JSON.stringify(user));
 
     navigate("/", {
@@ -43,7 +41,7 @@ function useAuth() {
   };
 
   // =====================================================
-  // Current User
+  // Get Current User
   // =====================================================
 
   const getUser = () => {

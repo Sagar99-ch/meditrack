@@ -1,7 +1,12 @@
 import { useState } from "react";
+
 import { User, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 
 import { toast } from "sonner";
+
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+
 import useAuth from "../../hooks/useAuth";
 
 const LoginForm = () => {
@@ -16,6 +21,16 @@ const LoginForm = () => {
     remember: false,
   });
 
+  const loginUser = useQuery(
+    api.users.loginUser,
+    formData.userId && formData.password
+      ? {
+          userId: formData.userId,
+          password: formData.password,
+        }
+      : "skip"
+  );
+
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
 
@@ -28,24 +43,39 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setLoading(true);
-
-    // Fake delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (formData.userId === "admin" && formData.password === "admin123") {
-      login({
-        userId: "admin",
-        name: "Administrator",
-        role: "Admin",
-      });
-
-      toast.success("Login Successful");
-    } else {
-      toast.error("Invalid User ID or Password");
+    if (!formData.userId.trim()) {
+      toast.error("Please enter User ID.");
+      return;
     }
 
-    setLoading(false);
+    if (!formData.password) {
+      toast.error("Please enter password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Wait for Convex query result
+      if (loginUser === undefined) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+
+      if (!loginUser) {
+        toast.error("Invalid User ID or Password.");
+        setLoading(false);
+        return;
+      }
+
+      login(loginUser);
+
+      toast.success("Login Successful");
+    } catch (error) {
+      console.error(error);
+      toast.error("Login failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

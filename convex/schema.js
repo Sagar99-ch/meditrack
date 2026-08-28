@@ -23,24 +23,36 @@ export default defineSchema({
     rackLocation: v.optional(v.string()),
 
     status: v.string(),
-
     notes: v.optional(v.string()),
 
-    // =====================================================
-    // Medicine Images
-    // =====================================================
-
-    // Old image field
-    // Existing medicines ke liye compatibility
+    // Old image - backward compatibility
     imageId: v.optional(v.id("_storage")),
 
-    // New Front / Back images
+    // New front/back images
     frontImageId: v.optional(v.id("_storage")),
     backImageId: v.optional(v.id("_storage")),
 
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_name", ["medicineName"]),
+
+  // =====================================================
+  // Users
+  // =====================================================
+
+  users: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    role: v.string(),
+    password: v.string(),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  // =====================================================
+  // Suppliers
+  // =====================================================
 
   suppliers: defineTable({
     supplierName: v.string(),
@@ -71,6 +83,10 @@ export default defineSchema({
 
     createdAt: v.number(),
   }),
+
+  // =====================================================
+  // Purchases
+  // =====================================================
 
   purchases: defineTable({
     supplierId: v.id("suppliers"),
@@ -119,6 +135,10 @@ export default defineSchema({
     .index("by_invoice", ["invoiceNumber"])
     .index("by_supplier", ["supplierId"])
     .index("by_date", ["purchaseDate"]),
+
+  // =====================================================
+  // Stock Adjustments
+  // =====================================================
 
   stockAdjustments: defineTable({
     medicineId: v.id("medicines"),
